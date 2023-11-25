@@ -5,6 +5,9 @@ import com.epam.model.Trainee;
 import com.epam.model.User;
 import com.epam.service.impl.TraineeServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,10 +21,14 @@ import java.util.Arrays;
 
 @Component
 @Slf4j
+@Transactional
 public class StorageBean {
     private final Resource resource;
     private final TraineeServiceImpl traineeServiceImpl;
     private final ObjectMapper objectMapper;
+
+    @PersistenceContext
+    EntityManager entityManager;
 
     @Autowired
     public StorageBean(@Value("${storage.data.file.path}") Resource resource, TraineeServiceImpl traineeServiceImpl, ObjectMapper objectMapper) {
@@ -40,22 +47,24 @@ public class StorageBean {
             throw new RuntimeException(e);
         }
         Arrays.stream(traineeData)
-                .forEach(f -> {
-                    Trainee trainee = new Trainee();
-                    trainee.setId(f.getId());
-                    trainee.setAddress(f.getAddress());
-                    trainee.setDateOfBirth(f.getDateOfBirth());
-                    User user = new User();
-                    user.setFirstName(f.getUser().getFirstName());
-                    user.setLastName(f.getUser().getLastName());
-                    user.setUsername(f.getUser().getUsername());
-                    user.setPassword(f.getUser().getPassword());
-                    user.setActive(f.getUser().isActive());
-                    trainee.setUser(user);
-                    traineeServiceImpl.createTrainee(trainee);
-                });
+                .forEach(this::saveTrainee);
        log. info("Storage initialization completed successfully.");
 
+    }
+
+    private void saveTrainee(TraineeJsonDto f) {
+        Trainee trainee = new Trainee();
+        trainee.setAddress(f.getAddress());
+        trainee.setDateOfBirth(f.getDateOfBirth());
+        User user = new User();
+        user.setFirstName(f.getUser().getFirstName());
+        user.setLastName(f.getUser().getLastName());
+        user.setUsername(f.getUser().getUsername());
+        user.setPassword(f.getUser().getPassword());
+        user.setActive(f.getUser().isActive());
+        trainee.setUser(user);
+        entityManager.persist(user);
+        entityManager.persist(trainee);
     }
 
     private String getFileContent() {

@@ -15,24 +15,23 @@ public class TrainingServiceImpl implements TrainingService {
     private TrainingDao trainingDao;
 
     public void createTraining(Training training) {
-        trainingDao.save(TrainingDao.TRAINING, training.getId(), training);
+        trainingDao.save(training);
     }
 
     public void updateTraining(Training training) {
-        trainingDao.update(TrainingDao.TRAINING, training.getId(), training);
+        trainingDao.update(training.getId(), training);
     }
 
     public void deleteTraining(Integer trainingId) {
-        trainingDao.delete(TrainingDao.TRAINING,trainingId);
+        trainingDao.delete(trainingId);
     }
 
     public Training getTrainingById(Integer trainingId) {
-        return trainingDao.findById(TrainingDao.TRAINING,trainingId);
+        return trainingDao.findById(trainingId);
     }
 
     public List<Training> getAllTrainings() {
-        return trainingDao.findAll(TrainingDao.TRAINING)
-                .values()
+        return trainingDao.findAll()
                 .stream()
                 .toList();
     }

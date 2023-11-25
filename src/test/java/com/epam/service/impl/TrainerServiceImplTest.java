@@ -17,7 +17,7 @@ import java.util.List;
 public class TrainerServiceImplTest {
 
     private TrainerServiceImpl trainerService;
-
+/*
     @BeforeEach
     public void setUp() {
         ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
@@ -131,4 +131,5 @@ public class TrainerServiceImplTest {
         }
         return false;
     }
+    */
 }

@@ -1,37 +1,47 @@
 package com.epam.dao;
 
 import com.epam.model.Trainee;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Map;
 
 @Repository
-public class TraineeDao extends GenericDao<Trainee> {
-    public static final String TRAINEES = "Trainees";
+@Transactional
+public class TraineeDao {
+    @PersistenceContext
+    EntityManager entityManager;
 
-    @Override
-    public void save(String namespace, Integer id, Trainee entity) {
-        super.save(TRAINEES, id, entity);
+    public void save(Trainee trainee) {
+        entityManager.persist(trainee);
     }
 
-    @Override
-    public Trainee findById(String namespace, Integer id) {
-        return super.findById(TRAINEES, id);
+    public Trainee findById(Integer id) {
+        return entityManager.find(Trainee.class, id);
     }
 
-    @Override
-    public Map<Integer, Trainee> findAll(String namespace) {
-        return super.findAll(TRAINEES);
+    public List<Trainee> findAll() {
+        String jpql = "SELECT t FROM Trainee t";
+        Query query = entityManager.createQuery(jpql);
+        return query.getResultList();
     }
 
-    @Override
-    public void update(String namespace, Integer id, Trainee updatedEntity) {
-        super.update(TRAINEES, id, updatedEntity);
+    public void update(Integer id, Trainee updatedEntity) {
+        Trainee trainee = findById(id);
+        trainee.setAddress(updatedEntity.getAddress());
+        trainee.setDateOfBirth(updatedEntity.getDateOfBirth());
+        trainee.setUser(updatedEntity.getUser());
+        trainee.setTrainers(updatedEntity.getTrainers());
+        trainee.setTrainings(updatedEntity.getTrainings());
+
     }
 
-    @Override
-    public void delete(String namespace, Integer id) {
-        super.delete(TRAINEES, id);
+    public void delete(Integer id) {
+        entityManager.remove(findById(id));
     }
 }
 

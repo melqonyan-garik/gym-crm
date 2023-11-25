@@ -24,23 +24,23 @@ public class TrainerServiceImpl implements TrainerService {
         // Set username and password for the trainee
         trainer.getUser().setUsername(username);
         trainer.getUser().setPassword(password);
-        trainerDao.save(TrainerDao.TRAINERS, trainer.getId(), trainer);
+        trainerDao.save(trainer);
     }
 
     public void updateTrainer(Trainer trainer) {
-        trainerDao.update(TrainerDao.TRAINERS, trainer.getId(), trainer);
+        trainerDao.update(trainer.getId(), trainer);
     }
 
     public void deleteTrainer(Integer trainerId) {
-        trainerDao.delete(TrainerDao.TRAINERS, trainerId);
+        trainerDao.delete(trainerId);
     }
 
     public Trainer getTrainerById(Integer trainerId) {
-        return trainerDao.findById(TrainerDao.TRAINERS, trainerId);
+        return trainerDao.findById(trainerId);
     }
 
     public List<Trainer> getAllTrainer() {
-        return trainerDao.findAll(TrainerDao.TRAINERS).values()
+        return trainerDao.findAll()
                 .stream()
                 .toList();
     }
@@ -50,7 +50,7 @@ public class TrainerServiceImpl implements TrainerService {
         String username = baseUsername;
 
         Set<String> existingUsernames = new HashSet<>();
-        trainerDao.findAll(TrainerDao.TRAINERS).values().forEach(existingTrainee -> {
+        trainerDao.findAll().forEach(existingTrainee -> {
             String existingName = existingTrainee.getUser().getFirstName() + "." + existingTrainee.getUser().getLastName();
             existingUsernames.add(existingName);
         });

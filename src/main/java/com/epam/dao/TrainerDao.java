@@ -1,37 +1,47 @@
 package com.epam.dao;
 
 import com.epam.model.Trainer;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Map;
+import java.util.List;
 
 @Repository
-public class TrainerDao extends GenericDao<Trainer> {
+public class TrainerDao {
 
-    public static final String TRAINERS = "Trainers";
+    @PersistenceContext
+    EntityManager entityManager;
 
-    @Override
-    public void save(String namespace, Integer id, Trainer entity) {
-        super.save(namespace, id, entity);
+
+    public void save(Trainer trainer) {
+        entityManager.persist(trainer);
     }
 
-    @Override
-    public Trainer findById(String namespace, Integer id) {
-        return super.findById(namespace, id);
+
+    public Trainer findById(Integer id) {
+        return entityManager.find(Trainer.class, id);
     }
 
-    @Override
-    public Map<Integer, Trainer> findAll(String namespace) {
-        return super.findAll(namespace);
+
+    public List<Trainer> findAll() {
+        String jpql = "SELECT t FROM Trainer t";
+        Query query = entityManager.createQuery(jpql);
+        return query.getResultList();
     }
 
-    @Override
-    public void update(String namespace, Integer id, Trainer updatedEntity) {
-        super.update(namespace, id, updatedEntity);
+
+    public void update(Integer id, Trainer updatedEntity) {
+        Trainer trainer = findById(id);
+        trainer.setUser(updatedEntity.getUser());
+        trainer.setSpecialization(updatedEntity.getSpecialization());
+        trainer.setTrainees(updatedEntity.getTrainees());
+        trainer.setTrainings(updatedEntity.getTrainings());
     }
 
-    @Override
-    public void delete(String namespace, Integer id) {
-        super.delete(namespace, id);
+
+    public void delete(Integer id) {
+        entityManager.remove(findById(id));
     }
 }

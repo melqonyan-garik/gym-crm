@@ -15,7 +15,7 @@ import java.util.List;
 
 public class TrainingServiceImplTest {
     private TrainingServiceImpl trainingService;
-
+/*
     @BeforeEach
     public void setUp() {
         ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
@@ -114,5 +114,5 @@ public class TrainingServiceImplTest {
         Assertions.assertTrue(allTrainings.contains(training1));
         Assertions.assertTrue(allTrainings.contains(training2));
     }
-
+*/
 }

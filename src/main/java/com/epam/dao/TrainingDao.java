@@ -1,37 +1,50 @@
 package com.epam.dao;
 
 import com.epam.model.Training;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Map;
+import java.util.List;
 
 @Repository
-public class TrainingDao extends GenericDao<Training>{
+public class TrainingDao {
 
-    public static final String TRAINING = "Training";
+    @PersistenceContext
+    EntityManager entityManager;
 
-    @Override
-    public void save(String namespace, Integer id, Training entity) {
-        super.save(namespace, id, entity);
+
+    public void save(Training training) {
+        entityManager.persist(training);
     }
 
-    @Override
-    public Training findById(String namespace, Integer id) {
-        return super.findById(namespace, id);
+
+    public Training findById(Integer id) {
+        return entityManager.find(Training.class, id);
     }
 
-    @Override
-    public Map<Integer, Training> findAll(String namespace) {
-        return super.findAll(namespace);
+
+    public List<Training> findAll() {
+        String jpql = "SELECT t FROM Training t";
+        Query query = entityManager.createQuery(jpql);
+        return query.getResultList();
     }
 
-    @Override
-    public void update(String namespace, Integer id, Training updatedEntity) {
-        super.update(namespace, id, updatedEntity);
+
+    public void update(Integer id, Training updatedEntity) {
+        Training training = findById(id);
+        training.setTrainingName(updatedEntity.getTrainingName());
+        training.setTrainingType(updatedEntity.getTrainingType());
+        training.setTrainingDate(updatedEntity.getTrainingDate());
+        training.setTrainingDuration(updatedEntity.getTrainingDuration());
+        training.setTrainee(updatedEntity.getTrainee());
+        training.setTrainer(updatedEntity.getTrainer());
+
     }
 
-    @Override
-    public void delete(String namespace, Integer id) {
-        super.delete(namespace, id);
+
+    public void delete(Integer id) {
+        entityManager.remove(findById(id));
     }
 }

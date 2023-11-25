@@ -24,23 +24,23 @@ public class TraineeServiceImpl implements TraineeService {
             trainee.getUser().setPassword(password);
 
         }
-        traineeDAO.save(TraineeDao.TRAINEES, trainee.getId(), trainee);
+        traineeDAO.save(trainee);
     }
 
     public void updateTrainee(Trainee trainee) {
-        traineeDAO.update(TraineeDao.TRAINEES, trainee.getId(), trainee);
+        traineeDAO.update(trainee.getId(), trainee);
     }
 
     public void deleteTrainee(Integer traineeId) {
-        traineeDAO.delete(TraineeDao.TRAINEES, traineeId);
+        traineeDAO.delete(traineeId);
     }
 
     public Trainee getTraineeById(Integer traineeId) {
-        return traineeDAO.findById(TraineeDao.TRAINEES, traineeId);
+        return traineeDAO.findById(traineeId);
     }
 
     public List<Trainee> getAllTrainees() {
-        return traineeDAO.findAll(TraineeDao.TRAINEES).values()
+        return traineeDAO.findAll()
                 .stream()
                 .toList();
     }
@@ -53,7 +53,7 @@ public class TraineeServiceImpl implements TraineeService {
         String username = baseUsername;
 
         Set<String> existingUsernames = new HashSet<>();
-        traineeDAO.findAll(TraineeDao.TRAINEES).values().forEach(existingTrainee -> {
+        traineeDAO.findAll().forEach(existingTrainee -> {
             String existingName = existingTrainee.getUser().getFirstName() + "." + existingTrainee.getUser().getLastName();
             existingUsernames.add(existingName);
         });
