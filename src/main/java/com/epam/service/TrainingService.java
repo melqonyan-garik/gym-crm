@@ -5,9 +5,10 @@ import com.epam.model.Training;
 import java.util.List;
 
 public interface TrainingService {
-    void createTraining(Training trainee);
-    void updateTraining(Training trainee);
-    void deleteTraining(Integer traineeId);
-    Training getTrainingById(Integer traineeId);
-    List<Training> getAllTrainings();
+
+ void createTraining(Training training);
+ void updateTraining(Training training);
+ void deleteTraining(Integer trainingId);
+ Training getTrainingById(Integer trainingId);
+ List<Training> getAllTrainings();
 }

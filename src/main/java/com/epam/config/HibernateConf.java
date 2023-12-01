@@ -1,6 +1,7 @@
 package com.epam.config;
 
 import org.postgresql.ds.PGSimpleDataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
@@ -14,6 +15,12 @@ import java.util.Properties;
 @Configuration
 @EnableTransactionManagement
 public class HibernateConf {
+    @Value("${DB_PASSWORD}")
+    private String dbPassword;
+    @Value("${DB_USERNAME}")
+    private String dbUsername;
+    @Value("${DB_NAME}")
+    private String dbName;
 
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
@@ -28,10 +35,10 @@ public class HibernateConf {
     @Bean
     public DataSource dataSource() {
         PGSimpleDataSource dataSource = new PGSimpleDataSource();
-        dataSource.setDatabaseName("gym_management_db");
+        dataSource.setDatabaseName(dbName);
         dataSource.setURL("jdbc:postgresql://localhost:5432/");
-        dataSource.setUser("postgres");
-        dataSource.setPassword("postgres");
+        dataSource.setUser(dbUsername);
+        dataSource.setPassword(dbPassword);
 
         return dataSource;
     }

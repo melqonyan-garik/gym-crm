@@ -2,7 +2,6 @@ package com.epam.service.impl;
 
 import com.epam.dao.TrainingDao;
 import com.epam.model.Training;
-import com.epam.service.TrainerService;
 import com.epam.service.TrainingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

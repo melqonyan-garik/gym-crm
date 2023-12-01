@@ -1,9 +1,9 @@
 package com.epam.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.util.List;
 
 @Getter
@@ -19,9 +19,10 @@ public class Trainer {
     @JoinColumn(name = "specialization")
     private TrainingType specialization;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
     private User user;
+
     @ManyToMany
     @JoinTable(
             name = "trainer_to_trainee",
@@ -30,7 +31,7 @@ public class Trainer {
     )
     private List<Trainee> trainees;
 
-    @OneToMany(mappedBy = "trainer")
+    @OneToMany(mappedBy = "trainer", cascade = CascadeType.PERSIST)
     private List<Training> trainings;
 
 }

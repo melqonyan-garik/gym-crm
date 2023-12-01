@@ -2,72 +2,94 @@ package com.epam.service.impl;
 
 import com.epam.dao.TraineeDao;
 import com.epam.model.Trainee;
+import com.epam.model.User;
 import com.epam.service.TraineeService;
-import com.epam.utils.PasswordGeneratorUtils;
+import com.epam.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.NoSuchElementException;
 
 @Service
 public class TraineeServiceImpl implements TraineeService {
     @Autowired
-    private TraineeDao traineeDAO;
+    private TraineeDao traineeDao;
+    @Autowired
+    private UserUtils userUtils;
+
 
     public void createTrainee(Trainee trainee) {
-        String username = generateTraineeUsername(trainee);
-        String password = PasswordGeneratorUtils.generateRandomPassword();
+        String username = userUtils.generateUsername(trainee.getUser());
+        String password = UserUtils.generateRandomPassword();
         if (trainee.getUser() != null) {
             trainee.getUser().setUsername(username);
             trainee.getUser().setPassword(password);
 
         }
-        traineeDAO.save(trainee);
+        traineeDao.save(trainee);
     }
 
-    public void updateTrainee(Trainee trainee) {
-        traineeDAO.update(trainee.getId(), trainee);
+    public boolean updateTrainee(Trainee trainee) {
+        checkUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+        return traineeDao.update(trainee.getId(), trainee);
     }
 
     public void deleteTrainee(Integer traineeId) {
-        traineeDAO.delete(traineeId);
+        getTraineeById(traineeId);
+        traineeDao.delete(traineeId);
     }
 
     public Trainee getTraineeById(Integer traineeId) {
-        return traineeDAO.findById(traineeId);
+        Trainee trainee = traineeDao.findById(traineeId);
+        checkUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+        return trainee;
+    }
+
+    public Trainee getTraineeByUsername(String username) {
+        Trainee trainee = traineeDao.findByUsername(username);
+        checkUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+        return trainee;
     }
 
     public List<Trainee> getAllTrainees() {
-        return traineeDAO.findAll()
+        return traineeDao.findAll()
                 .stream()
                 .toList();
     }
 
-    public String generateTraineeUsername(Trainee trainee) {
-        if (trainee.getUser() == null) {
-            return null;
+    public boolean changePassword(Integer traineeId, String currentPassword, String newPassword) {
+        Trainee trainee = traineeDao.findById(traineeId);
+        checkUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+
+        if (currentPassword.equals(trainee.getUser().getPassword())) {
+            trainee.getUser().setPassword(newPassword);
+            traineeDao.save(trainee);
+            return true;
         }
-        String baseUsername = trainee.getUser().getFirstName() + "." + trainee.getUser().getLastName();
-        String username = baseUsername;
-
-        Set<String> existingUsernames = new HashSet<>();
-        traineeDAO.findAll().forEach(existingTrainee -> {
-            String existingName = existingTrainee.getUser().getFirstName() + "." + existingTrainee.getUser().getLastName();
-            existingUsernames.add(existingName);
-        });
-
-        // Add serial number if the username already exists
-        int serialNumber = 1;
-        while (existingUsernames.contains(username)) {
-            username = baseUsername + serialNumber;
-            serialNumber++;
-        }
-
-        return username;
+        return false;
     }
 
+    public void activateDeactivateTrainee(Integer traineeId, boolean activate) {
+        Trainee trainee = traineeDao.findById(traineeId);
+        User user = trainee.getUser();
+        checkUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
+        user.setActive(activate);
+        traineeDao.save(trainee);
 
+    }
+
+    public void deleteTraineeByUsername(String username) {
+        Trainee trainee = traineeDao.findByUsername(username);
+        checkUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+        traineeDao.deleteByUsername(username);
+    }
+
+    public void checkUsernameAndPasswordMatching(String username, String password) {
+        Trainee trainee = traineeDao.findByUsername(username);
+        if (trainee == null || !trainee.getUser().getPassword().equals(password)) {
+            throw new NoSuchElementException();
+        }
+    }
 }
 

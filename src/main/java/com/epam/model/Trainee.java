@@ -1,11 +1,12 @@
 package com.epam.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+
 
 @Getter
 @Setter
@@ -19,17 +20,17 @@ public class Trainee {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column
+    @Column(name = "address")
     private String address;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToMany(mappedBy = "trainees")
     private List<Trainer> trainers;
 
-    @OneToMany(mappedBy = "trainee")
+    @OneToMany(mappedBy = "trainee",cascade = CascadeType.ALL)
     private List<Training> trainings;
 
 }

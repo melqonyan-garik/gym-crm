@@ -26,8 +26,9 @@ public class TrainingDao {
 
 
     public List<Training> findAll() {
-        String jpql = "SELECT t FROM Training t";
-        Query query = entityManager.createQuery(jpql);
+        Query query = entityManager.createQuery("""
+                SELECT t FROM Training t
+                """);
         return query.getResultList();
     }
 
