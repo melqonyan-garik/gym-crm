@@ -5,13 +5,15 @@ import com.epam.model.Trainer;
 import com.epam.model.User;
 import com.epam.service.TrainerService;
 import com.epam.utils.UserUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
+@Slf4j
 public class TrainerServiceImpl implements TrainerService {
     @Autowired
     private TrainerDao trainerDao;
@@ -23,26 +25,26 @@ public class TrainerServiceImpl implements TrainerService {
         String username = userUtils.generateUsername(trainer.getUser());
         String password = UserUtils.generateRandomPassword();
 
-        // Set username and password for the trainee
+
         trainer.getUser().setUsername(username);
         trainer.getUser().setPassword(password);
         trainerDao.save(trainer);
     }
 
     public boolean updateTrainer(Trainer trainer) {
-        checkUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+        areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
         return trainerDao.update(trainer.getId(), trainer);
     }
 
     public void deleteTrainer(Integer trainerId) {
         Trainer trainer = getTrainerById(trainerId);
-        checkUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+        areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
         trainerDao.delete(trainerId);
     }
 
     public Trainer getTrainerById(Integer trainerId) {
         Trainer trainer = trainerDao.findById(trainerId);
-        checkUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+        areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
         return trainer;
     }
 
@@ -51,9 +53,10 @@ public class TrainerServiceImpl implements TrainerService {
                 .stream()
                 .toList();
     }
-    public boolean changePassword(Integer trainerId,String currentPassword, String newPassword) {
+
+    public boolean changePassword(Integer trainerId, String currentPassword, String newPassword) {
         Trainer trainer = trainerDao.findById(trainerId);
-        checkUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+        areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
 
         if (currentPassword.equals(trainer.getUser().getPassword())) {
             trainer.getUser().setPassword(newPassword);
@@ -66,16 +69,22 @@ public class TrainerServiceImpl implements TrainerService {
     public void activateDeactivateTrainer(Integer trainerId, boolean activate) {
         Trainer trainer = trainerDao.findById(trainerId);
         User user = trainer.getUser();
-        checkUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
+        areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
         user.setActive(activate);
         trainerDao.save(trainer);
 
     }
 
-    public void checkUsernameAndPasswordMatching(String username, String password) {
+    public boolean areUsernameAndPasswordMatching(String username, String password) {
+        Assert.notNull(username, "Username must not be null");
+        Assert.notNull(password, "Password must not be null");
         Trainer trainer = trainerDao.findByUsername(username);
-        if (trainer == null || !trainer.getUser().getPassword().equals(password)) {
-            throw new NoSuchElementException();
+
+        if (trainer != null && trainer.getUser() != null) {
+            return trainer.getUser().getPassword().equals(password);
+        } else {
+            log.warn("Trainer or user is null for username: {}", username);
+            throw new IllegalArgumentException("Invalid trainer or user for username: " + username);
         }
     }
 }

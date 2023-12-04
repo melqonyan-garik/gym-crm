@@ -18,6 +18,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
@@ -47,32 +48,56 @@ public class TrainerServiceImplTest {
     }
 
     @Test
-    void testCheckUsernameAndPasswordMatching() {
+    void testAreUsernameAndPasswordMatching_ValidUsernameAndPassword() {
         String username = "testUser";
         String password = "testPassword";
-        Trainer mockTrainee = new Trainer();
+        Trainer mockTrainer = new Trainer();
         User mockUser = new User();
 
         mockUser.setPassword(password);
-        mockTrainee.setUser(mockUser);
-        when(trainerDAO.findByUsername(username)).thenReturn(mockTrainee);
+        mockTrainer.setUser(mockUser);
+        when(trainerDAO.findByUsername(username)).thenReturn(mockTrainer);
 
-        assertDoesNotThrow(() -> trainerService.checkUsernameAndPasswordMatching(username, password));
+        assertDoesNotThrow(() -> trainerService.areUsernameAndPasswordMatching(username, password));
         verify(trainerDAO).findByUsername(username);
     }
 
     @Test
-    void testCheckUsernameAndPasswordMatching_InvalidPassword() {
+    void testAreUsernameAndPasswordMatching_InvalidPassword() {
         String username = "testUser";
         String password = "testPassword";
-        Trainer mockTrainee = new Trainer();
+        Trainer mockTrainer = new Trainer();
         User mockUser = new User();
         mockUser.setPassword("incorrectPassword");
-        mockTrainee.setUser(mockUser);
-        when(trainerDAO.findByUsername(username)).thenReturn(mockTrainee);
+        mockTrainer.setUser(mockUser);
+        when(trainerDAO.findByUsername(username)).thenReturn(mockTrainer);
 
-        assertThrows(RuntimeException.class, () -> trainerService.checkUsernameAndPasswordMatching(username, password));
+        boolean areUsernameAndPasswordMatching = trainerService.areUsernameAndPasswordMatching(username, password);
+        assertFalse(areUsernameAndPasswordMatching);
         verify(trainerDAO).findByUsername(username);
+    }
+    @Test
+    void testAreUsernameAndPasswordMatching_NullUsername() {
+        String username = null;
+        String password = "testPassword";
+
+        assertThrows(IllegalArgumentException.class,()-> trainerService.areUsernameAndPasswordMatching(username, password));
+    }
+
+    @Test
+    void testAreUsernameAndPasswordMatching_NullPassword() {
+        String username = "testUser";
+        String password = null;
+
+        assertThrows(IllegalArgumentException.class,()-> trainerService.areUsernameAndPasswordMatching(username, password));
+    }
+
+    @Test
+    void testAreUsernameAndPasswordMatching_NullUsernameAndPassword() {
+        String username = null;
+        String password = null;
+
+        assertThrows(IllegalArgumentException.class,()-> trainerService.areUsernameAndPasswordMatching(username, password));
     }
     @Test
     public void testCreateTrainers() {
@@ -88,12 +113,12 @@ public class TrainerServiceImplTest {
     }
     @Test
     void testDeleteTrainer() {
-        Integer traineeIdToDelete = 1;
-        Trainer mockedTrainee = TrainerMockData.getMockedTrainer_1();
-        when(trainerDAO.findById(traineeIdToDelete)).thenReturn(mockedTrainee);
-        when(trainerDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(mockedTrainee);
-        trainerService.deleteTrainer(traineeIdToDelete);
-        verify(trainerDAO).delete(traineeIdToDelete);
+        Integer trainerIdToDelete = 1;
+        Trainer mockedTrainer = TrainerMockData.getMockedTrainer_1();
+        when(trainerDAO.findById(trainerIdToDelete)).thenReturn(mockedTrainer);
+        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(mockedTrainer);
+        trainerService.deleteTrainer(trainerIdToDelete);
+        verify(trainerDAO).delete(trainerIdToDelete);
 
     }
     @Test
@@ -128,8 +153,8 @@ public class TrainerServiceImplTest {
     void testGetAllTrainers() {
         Trainer trainer1 = new Trainer();
         Trainer trainer2 = new Trainer();
-        List<Trainer> allTrainees = List.of(trainer1, trainer2);
-        when(trainerDAO.findAll()).thenReturn(allTrainees);
+        List<Trainer> allTrainers = List.of(trainer1, trainer2);
+        when(trainerDAO.findAll()).thenReturn(allTrainers);
 
         List<Trainer> result = trainerService.getAllTrainer();
         Assertions.assertNotNull(result);

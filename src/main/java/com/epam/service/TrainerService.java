@@ -12,5 +12,5 @@ public interface TrainerService {
     List<Trainer> getAllTrainer();
     boolean changePassword(Integer trainerId, String currentPassword, String newPassword);
     void activateDeactivateTrainer(Integer trainerId, boolean activate);
-    void checkUsernameAndPasswordMatching(String username, String password);
+    boolean areUsernameAndPasswordMatching(String username, String password);
 }
