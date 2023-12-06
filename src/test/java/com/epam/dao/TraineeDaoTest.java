@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -124,7 +125,7 @@ public class TraineeDaoTest {
         when(query.getSingleResult()).thenReturn(new Trainee());
 
         // When
-        Trainee result = traineeDAO.findByUsername(username);
+        Trainee result = traineeDAO.findByUsername(username).get();
 
         // Then
         assertNotNull(result);
@@ -146,14 +147,16 @@ public class TraineeDaoTest {
         trainers.add(mockedTrainer1);
         updatedTrainee.setTrainers(trainers);
 
-        when(entityManager.find(Trainee.class, existingTrainee.getId())).thenReturn(existingTrainee);
-        boolean result = traineeDAO.update(existingTrainee.getId(), updatedTrainee);
+        when(entityManager.merge(updatedTrainee)).thenReturn(updatedTrainee);
 
-        Assertions.assertTrue(result);
-        Assertions.assertEquals(updatedTrainee.getAddress(), existingTrainee.getAddress());
-        Assertions.assertEquals(updatedTrainee.getDateOfBirth(), existingTrainee.getDateOfBirth());
+        Optional<Trainee> optionalTrainee = traineeDAO.update(updatedTrainee);
+        Trainee trainee = optionalTrainee.get();
 
-        verify(entityManager, times(2)).find(any(),any());
+        Assertions.assertTrue(optionalTrainee.isPresent());
+        Assertions.assertEquals(updatedTrainee.getAddress(), trainee.getAddress());
+        Assertions.assertEquals(updatedTrainee.getDateOfBirth(), trainee.getDateOfBirth());
+
+        verify(entityManager, times(1)).merge(any());
     }
 }
 

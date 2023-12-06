@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Transactional
@@ -22,12 +23,28 @@ public class TrainerDao {
     @PersistenceContext
     EntityManager entityManager;
 
-    public void save(Trainer trainer) {
+    public Trainer save(Trainer trainer) {
         entityManager.persist(trainer);
+        return trainer;
     }
 
-    public Trainer findById(Integer id) {
-        return entityManager.find(Trainer.class, id);
+    public Optional<Trainer> update(Trainer trainer) {
+        Trainer updatedTrainer = entityManager.merge(trainer);
+        return Optional.ofNullable(updatedTrainer);
+    }
+
+    public Optional<Trainer> findById(Integer id) {
+        Trainer trainer = entityManager.find(Trainer.class, id);
+        return Optional.ofNullable(trainer);
+    }
+
+    public Optional<Trainer> findByUsername(String username) {
+        TypedQuery<Trainer> query = entityManager.createQuery("""
+                SELECT tr FROM Trainer tr
+                INNER JOIN User u ON u.id = tr.user.id AND u.username LIKE CONCAT('%', :username, '%')
+                """, Trainer.class).setParameter("username", username);
+
+        return Optional.ofNullable(query.getSingleResult());
     }
 
     public List<Trainer> findAll() {
@@ -37,30 +54,13 @@ public class TrainerDao {
         return query.getResultList();
     }
 
-    public boolean update(Integer id, Trainer updatedEntity) {
-        Trainer trainer = findById(id);
-        if (trainer != null) {
-            trainer.setUser(updatedEntity.getUser());
-            trainer.setSpecialization(updatedEntity.getSpecialization());
-            trainer.setTrainings(updatedEntity.getTrainings());
-            updateTrainerTraineeList(id,trainer.getTrainees());
+    public boolean delete(Integer trainerId) {
+        Optional<Trainer> optionalTrainer = findById(trainerId);
+        if (optionalTrainer.isPresent()) {
+            entityManager.remove(optionalTrainer.get());
             return true;
         }
         return false;
-    }
-
-
-    public void delete(Integer id) {
-        entityManager.remove(findById(id));
-    }
-
-    public Trainer findByUsername(String username) {
-        TypedQuery<Trainer> query = entityManager.createQuery("""
-                SELECT tr FROM Trainer tr
-                INNER JOIN User u ON u.id = tr.user.id AND u.username LIKE CONCAT('%', :username, '%')
-                """, Trainer.class).setParameter("username", username);
-
-        return query.getSingleResult();
     }
 
     public void updateTrainerTraineeList(Integer trainerId, List<Trainee> newTrainees) {
@@ -69,7 +69,7 @@ public class TrainerDao {
             trainer.getTrainees().forEach(trainee -> trainee.getTrainers().remove(trainer));
             trainer.getTrainees().clear();
 
-            newTrainees.forEach(newTrainee->newTrainee.getTrainers().add(trainer));
+            newTrainees.forEach(newTrainee -> newTrainee.getTrainers().add(trainer));
             trainer.setTrainees(newTrainees);
         }
     }
@@ -82,7 +82,6 @@ public class TrainerDao {
         Trainer trainer = entityManager.createQuery(cq).getSingleResult();//username is unique that's why we choose single result
         return trainer.getTrainings();
     }
-
 
     public List<Trainer> getNotAssignedActiveTrainers() {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();

@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -34,15 +35,15 @@ public class TrainerServiceImplTest {
     @Test
     void testFindById() {
         TrainerJsonDto mockDataTrainer = TrainerMockData.getMockedTrainer_2().get(0);
-        Trainer mockTrainer = Mappers.convertTrainerJsonDtoToTrainer(mockDataTrainer);
-        when(trainerDAO.findByUsername(mockTrainer.getUser().getUsername())).thenReturn(mockTrainer);
-        when(trainerDAO.findById(mockTrainer.getId())).thenReturn(mockTrainer);
-        // When
-        Trainer result = trainerService.getTrainerById(mockTrainer.getId());
-        // Then
+        Trainer mockedTrainer = Mappers.convertTrainerJsonDtoToTrainer(mockDataTrainer);
+        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(Optional.of(mockedTrainer));
+        when(trainerDAO.findById(mockedTrainer.getId())).thenReturn(Optional.of(mockedTrainer));
+
+        Trainer result = trainerService.getTrainerById(mockedTrainer.getId()).get();
+
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(mockTrainer, result);
-        Assertions.assertEquals(result.getId(), mockTrainer.getId());
+        Assertions.assertEquals(mockedTrainer, result);
+        Assertions.assertEquals(result.getId(), mockedTrainer.getId());
 
 
     }
@@ -51,12 +52,12 @@ public class TrainerServiceImplTest {
     void testAreUsernameAndPasswordMatching_ValidUsernameAndPassword() {
         String username = "testUser";
         String password = "testPassword";
-        Trainer mockTrainer = new Trainer();
+        Trainer mockedTrainer = new Trainer();
         User mockUser = new User();
 
         mockUser.setPassword(password);
-        mockTrainer.setUser(mockUser);
-        when(trainerDAO.findByUsername(username)).thenReturn(mockTrainer);
+        mockedTrainer.setUser(mockUser);
+        when(trainerDAO.findByUsername(username)).thenReturn(Optional.of(mockedTrainer));
 
         assertDoesNotThrow(() -> trainerService.areUsernameAndPasswordMatching(username, password));
         verify(trainerDAO).findByUsername(username);
@@ -66,11 +67,11 @@ public class TrainerServiceImplTest {
     void testAreUsernameAndPasswordMatching_InvalidPassword() {
         String username = "testUser";
         String password = "testPassword";
-        Trainer mockTrainer = new Trainer();
+        Trainer mockedTrainer = new Trainer();
         User mockUser = new User();
         mockUser.setPassword("incorrectPassword");
-        mockTrainer.setUser(mockUser);
-        when(trainerDAO.findByUsername(username)).thenReturn(mockTrainer);
+        mockedTrainer.setUser(mockUser);
+        when(trainerDAO.findByUsername(username)).thenReturn(Optional.of(mockedTrainer));
 
         boolean areUsernameAndPasswordMatching = trainerService.areUsernameAndPasswordMatching(username, password);
         assertFalse(areUsernameAndPasswordMatching);
@@ -115,8 +116,8 @@ public class TrainerServiceImplTest {
     void testDeleteTrainer() {
         Integer trainerIdToDelete = 1;
         Trainer mockedTrainer = TrainerMockData.getMockedTrainer_1();
-        when(trainerDAO.findById(trainerIdToDelete)).thenReturn(mockedTrainer);
-        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(mockedTrainer);
+        when(trainerDAO.findById(trainerIdToDelete)).thenReturn(Optional.of(mockedTrainer));
+        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(Optional.of(mockedTrainer));
         trainerService.deleteTrainer(trainerIdToDelete);
         verify(trainerDAO).delete(trainerIdToDelete);
 
@@ -125,16 +126,16 @@ public class TrainerServiceImplTest {
     void testUpdateTrainer() {
         TrainerJsonDto mockedTrainerJson = TrainerMockData.getMockedTrainer_2().get(1);
         Trainer mockedTrainer = Mappers.convertTrainerJsonDtoToTrainer(mockedTrainerJson);
-        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(mockedTrainer);
+        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(Optional.of(mockedTrainer));
 
         trainerService.updateTrainer(mockedTrainer);
-        verify(trainerDAO).update(mockedTrainer.getId(),mockedTrainer);
+        verify(trainerDAO).update(mockedTrainer);
     }
     @Test
     void testActivateDeactivateTrainer() {
         Trainer mockedTrainer = TrainerMockData.getMockedTrainer_1();
-        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(mockedTrainer);
-        when(trainerDAO.findById(mockedTrainer.getId())).thenReturn(mockedTrainer);
+        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(Optional.of(mockedTrainer));
+        when(trainerDAO.findById(mockedTrainer.getId())).thenReturn(Optional.of(mockedTrainer));
         trainerService.activateDeactivateTrainer(mockedTrainer.getId(), mockedTrainer.getUser().isActive());
 
         verify(trainerDAO).save(mockedTrainer);
@@ -142,8 +143,8 @@ public class TrainerServiceImplTest {
     @Test
     void testChangePassword() {
         Trainer mockedTrainer = TrainerMockData.getMockedTrainer_1();
-        when(trainerDAO.findById(mockedTrainer.getId())).thenReturn(mockedTrainer);
-        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(mockedTrainer);
+        when(trainerDAO.findById(mockedTrainer.getId())).thenReturn(Optional.of(mockedTrainer));
+        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(Optional.of(mockedTrainer));
         trainerService.changePassword(mockedTrainer.getId(),mockedTrainer.getUser().getPassword()
                 ,"newPass");
         verify(trainerDAO).save(mockedTrainer);

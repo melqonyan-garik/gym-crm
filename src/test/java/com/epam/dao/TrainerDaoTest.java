@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -107,13 +108,9 @@ public class TrainerDaoTest {
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(query.getSingleResult()).thenReturn(new Trainer());
 
-        // When
-        Trainer result = trainerDao.findByUsername(username);
+        Trainer result = trainerDao.findByUsername(username).get();
 
-        // Then
         assertNotNull(result);
-
-        // Optionally, you can add more assertions based on the expected behavior
         verify(entityManager).createQuery(anyString(), eq(Trainer.class));
         verify(query).setParameter(anyString(), any());
         verify(query).getSingleResult();
@@ -132,14 +129,16 @@ public class TrainerDaoTest {
         trainees.add(mockedTrainee1);
         updatedTrainer.setTrainees(trainees);
 
-        when(entityManager.find(Trainer.class, existingTrainer.getId())).thenReturn(existingTrainer);
-        boolean result = trainerDao.update(existingTrainer.getId(), updatedTrainer);
+        when(entityManager.merge(updatedTrainer)).thenReturn(updatedTrainer);
 
-        Assertions.assertTrue(result);
-        Assertions.assertEquals(updatedTrainer.getUser().getFirstName(), existingTrainer.getUser().getFirstName());
-        Assertions.assertEquals(updatedTrainer.getUser().isActive(), existingTrainer.getUser().isActive());
+        Optional<Trainer> optionalTrainer = trainerDao.update(updatedTrainer);
+        Trainer trainer = optionalTrainer.get();
 
-        verify(entityManager, times(2)).find(any(), any());
+        Assertions.assertTrue(optionalTrainer.isPresent());
+        Assertions.assertEquals(updatedTrainer.getUser().getFirstName(), trainer.getUser().getFirstName());
+        Assertions.assertEquals(updatedTrainer.getUser().isActive(), trainer.getUser().isActive());
+
+        verify(entityManager, times(1)).merge(any());
     }
 }
 

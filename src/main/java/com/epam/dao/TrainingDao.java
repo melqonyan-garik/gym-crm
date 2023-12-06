@@ -7,6 +7,7 @@ import jakarta.persistence.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class TrainingDao {
@@ -15,15 +16,20 @@ public class TrainingDao {
     EntityManager entityManager;
 
 
-    public void save(Training training) {
+    public Training save(Training training) {
         entityManager.persist(training);
+        return training;
     }
 
-
-    public Training findById(Integer id) {
-        return entityManager.find(Training.class, id);
+    public Optional<Training> update(Training updatedEntity) {
+        entityManager.merge(updatedEntity);
+        return Optional.ofNullable(updatedEntity);
     }
 
+    public Optional<Training> findById(Integer id) {
+        Training training = entityManager.find(Training.class, id);
+        return Optional.ofNullable(training);
+    }
 
     public List<Training> findAll() {
         Query query = entityManager.createQuery("""
@@ -32,20 +38,12 @@ public class TrainingDao {
         return query.getResultList();
     }
 
-
-    public void update(Integer id, Training updatedEntity) {
-        Training training = findById(id);
-        training.setTrainingName(updatedEntity.getTrainingName());
-        training.setTrainingType(updatedEntity.getTrainingType());
-        training.setTrainingDate(updatedEntity.getTrainingDate());
-        training.setTrainingDuration(updatedEntity.getTrainingDuration());
-        training.setTrainee(updatedEntity.getTrainee());
-        training.setTrainer(updatedEntity.getTrainer());
-
-    }
-
-
-    public void delete(Integer id) {
-        entityManager.remove(findById(id));
+    public boolean delete(Integer id) {
+        Optional<Training> optionalTraining = findById(id);
+        if (optionalTraining.isPresent()) {
+            entityManager.remove(optionalTraining.get());
+            return true;
+        }
+        return false;
     }
 }

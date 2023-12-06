@@ -15,9 +15,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,9 +37,10 @@ public class TraineeServiceImplTest {
     void testFindByUsername() {
         TraineeJsonDto traineeJsonDto = TraineeMockData.getMockedTrainee_2().get(0);
         Trainee mockedTrainee = Mappers.convertTraineeJsonDtoToTrainee(traineeJsonDto);
-        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(mockedTrainee);
+        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername()))
+                .thenReturn(Optional.of(mockedTrainee));
 
-        Trainee result = traineeService.getTraineeByUsername(mockedTrainee.getUser().getUsername());
+        Trainee result = traineeService.getTraineeByUsername(mockedTrainee.getUser().getUsername()).get();
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(mockedTrainee, result);
@@ -60,19 +63,15 @@ public class TraineeServiceImplTest {
 
     @Test
     void testAreUsernameAndPasswordMatching_ValidUsernameAndPassword() {
-        // Given
         String username = "testUser";
         String password = "testPassword";
-        Trainee mockTrainee = new Trainee();
+        Trainee mockedTrainee = new Trainee();
         User mockUser = new User();
         mockUser.setPassword(password);
-        mockTrainee.setUser(mockUser);
-        when(traineeDAO.findByUsername(username)).thenReturn(mockTrainee);
+        mockedTrainee.setUser(mockUser);
+        when(traineeDAO.findByUsername(username)).thenReturn(Optional.of(mockedTrainee));
 
-        // When/Then
         assertDoesNotThrow(() -> traineeService.areUsernameAndPasswordMatching(username, password));
-
-        // Optionally, verify that the DAO method was called with the correct parameter
         verify(traineeDAO).findByUsername(username);
     }
 
@@ -80,11 +79,11 @@ public class TraineeServiceImplTest {
     void testAreUsernameAndPasswordMatching_InvalidPassword() {
         String username = "testUser";
         String password = "testPassword";
-        Trainee mockTrainee = new Trainee();
+        Trainee mockedTrainee = new Trainee();
         User mockUser = new User();
         mockUser.setPassword("incorrectPassword");
-        mockTrainee.setUser(mockUser);
-        when(traineeDAO.findByUsername(username)).thenReturn(mockTrainee);
+        mockedTrainee.setUser(mockUser);
+        when(traineeDAO.findByUsername(username)).thenReturn(Optional.of(mockedTrainee));
 
         boolean areUsernameAndPasswordMatching = traineeService.areUsernameAndPasswordMatching(username, password);
         assertFalse(areUsernameAndPasswordMatching);
@@ -96,7 +95,7 @@ public class TraineeServiceImplTest {
         String username = null;
         String password = "testPassword";
 
-        assertThrows(IllegalArgumentException.class,()-> traineeService.areUsernameAndPasswordMatching(username, password));
+        assertThrows(IllegalArgumentException.class, () -> traineeService.areUsernameAndPasswordMatching(username, password));
     }
 
     @Test
@@ -104,7 +103,7 @@ public class TraineeServiceImplTest {
         String username = "testUser";
         String password = null;
 
-        assertThrows(IllegalArgumentException.class,()-> traineeService.areUsernameAndPasswordMatching(username, password));
+        assertThrows(IllegalArgumentException.class, () -> traineeService.areUsernameAndPasswordMatching(username, password));
     }
 
     @Test
@@ -112,7 +111,7 @@ public class TraineeServiceImplTest {
         String username = null;
         String password = null;
 
-        assertThrows(IllegalArgumentException.class,()-> traineeService.areUsernameAndPasswordMatching(username, password));
+        assertThrows(IllegalArgumentException.class, () -> traineeService.areUsernameAndPasswordMatching(username, password));
     }
 
     @Test
@@ -136,8 +135,8 @@ public class TraineeServiceImplTest {
     void testDeleteTrainee() {
         Integer traineeIdToDelete = 1;
         Trainee mockedTrainee = TraineeMockData.getMockedTrainee_1();
-        when(traineeDAO.findById(traineeIdToDelete)).thenReturn(mockedTrainee);
-        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(mockedTrainee);
+        when(traineeDAO.findById(traineeIdToDelete)).thenReturn(Optional.of(mockedTrainee));
+        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(Optional.of(mockedTrainee));
         traineeService.deleteTrainee(traineeIdToDelete);
         verify(traineeDAO).delete(traineeIdToDelete);
 
@@ -146,16 +145,16 @@ public class TraineeServiceImplTest {
     @Test
     void testUpdateTrainee() {
         Trainee mockedTrainee = TraineeMockData.getMockedTrainee_1();
-        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(mockedTrainee);
+        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(Optional.of(mockedTrainee));
 
         traineeService.updateTrainee(mockedTrainee);
-        verify(traineeDAO).update(mockedTrainee.getId(), mockedTrainee);
+        verify(traineeDAO).update(mockedTrainee);
     }
 
     @Test
     void testDeleteTraineeByUsername() {
         Trainee mockedTrainee = TraineeMockData.getMockedTrainee_1();
-        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(mockedTrainee);
+        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(Optional.of(mockedTrainee));
 
         traineeService.deleteTraineeByUsername(mockedTrainee.getUser().getUsername());
         verify(traineeDAO).deleteByUsername(mockedTrainee.getUser().getUsername());
@@ -164,8 +163,8 @@ public class TraineeServiceImplTest {
     @Test
     void testActivateDeactivateTrainee() {
         Trainee mockedTrainee = TraineeMockData.getMockedTrainee_1();
-        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(mockedTrainee);
-        when(traineeDAO.findById(mockedTrainee.getId())).thenReturn(mockedTrainee);
+        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(Optional.of(mockedTrainee));
+        when(traineeDAO.findById(mockedTrainee.getId())).thenReturn(Optional.of(mockedTrainee));
         traineeService.activateDeactivateTrainee(mockedTrainee.getId(), mockedTrainee.getUser().isActive());
 
         verify(traineeDAO).save(mockedTrainee);
@@ -174,8 +173,8 @@ public class TraineeServiceImplTest {
     @Test
     void testChangePassword() {
         Trainee mockedTrainee = TraineeMockData.getMockedTrainee_1();
-        when(traineeDAO.findById(mockedTrainee.getId())).thenReturn(mockedTrainee);
-        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(mockedTrainee);
+        when(traineeDAO.findById(mockedTrainee.getId())).thenReturn(Optional.of(mockedTrainee));
+        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(Optional.of(mockedTrainee));
         traineeService.changePassword(mockedTrainee.getId(), mockedTrainee.getUser().getPassword()
                 , "newPass");
         verify(traineeDAO).save(mockedTrainee);

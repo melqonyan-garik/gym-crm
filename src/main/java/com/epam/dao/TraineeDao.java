@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Transactional
@@ -21,34 +22,28 @@ public class TraineeDao {
     @PersistenceContext
     EntityManager entityManager;
 
-    public void save(Trainee trainee) {
+    public Trainee save(Trainee trainee) {
         entityManager.persist(trainee);
+        return trainee;
     }
 
-    public boolean update(Integer id, Trainee updatedEntity) {
-        Trainee trainee = findById(id);
-        if (trainee != null) {
-            trainee.setAddress(updatedEntity.getAddress());
-            trainee.setDateOfBirth(updatedEntity.getDateOfBirth());
-            trainee.setUser(updatedEntity.getUser());
-            trainee.setTrainings(updatedEntity.getTrainings());
-            updateTraineeTrainersList(id,updatedEntity.getTrainers());
-            return true;
-        }
-        return false;
+    public Optional<Trainee> update(Trainee updatedEntity) {
+        Trainee mergedTrainee = entityManager.merge(updatedEntity);
+        return Optional.ofNullable(mergedTrainee);
     }
 
-    public Trainee findById(Integer id) {
-        return entityManager.find(Trainee.class, id);
+    public Optional<Trainee> findById(Integer id) {
+        Trainee trainee = entityManager.find(Trainee.class, id);
+        return Optional.ofNullable(trainee);
     }
 
-    public Trainee findByUsername(String username) {
+    public Optional<Trainee> findByUsername(String username) {
         TypedQuery<Trainee> query = entityManager.createQuery("""
                 SELECT tr FROM Trainee tr
                 INNER JOIN User u ON u.id = tr.user.id AND u.username LIKE CONCAT('%', :username, '%')
                 """, Trainee.class).setParameter("username", username);
 
-        return query.getSingleResult();
+        return Optional.ofNullable(query.getSingleResult());
     }
 
 
@@ -59,14 +54,22 @@ public class TraineeDao {
         return query.getResultList();
     }
 
-    public void delete(Integer id) {
-        Trainee trainee = findById(id);
-        entityManager.remove(trainee);
+    public boolean delete(Integer traineeId) {
+        Optional<Trainee> optionalTrainee = findById(traineeId);
+        if (optionalTrainee.isPresent()){
+            entityManager.remove(optionalTrainee.get());
+            return true;
+        }
+        return false;
     }
 
-    public void deleteByUsername(String username) {
-        Trainee trainee = findByUsername(username);
-        entityManager.remove(trainee);
+    public boolean deleteByUsername(String username) {
+        Optional<Trainee> optionalTrainee = findByUsername(username);
+        if (optionalTrainee.isPresent()) {
+            entityManager.remove(optionalTrainee.get());
+            return true;
+        }
+        return false;
     }
 
     List<Training> getTrainingsByUsername(String username) {

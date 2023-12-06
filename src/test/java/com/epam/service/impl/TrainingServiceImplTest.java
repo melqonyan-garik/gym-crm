@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,13 +34,14 @@ public class TrainingServiceImplTest {
         trainingService.createTraining(mockedTrainingData);
         verify(trainingDao).save(mockedTrainingData);
     }
+
     @Test
     void testFindById() {
         TrainingJsonDto mockedTrainingJson = TrainingMockData.getMockedTraining_2(
                 TRAINING_RESOURCE_NAME);
         Training mockedTraining = Mappers.convertTrainingJsonDtoToTraining(mockedTrainingJson);
-        when(trainingDao.findById(mockedTraining.getId())).thenReturn(mockedTraining);
-        Training result = trainingService.getTrainingById(mockedTraining.getId());
+        when(trainingDao.findById(mockedTraining.getId())).thenReturn(Optional.of(mockedTraining));
+        Training result = trainingService.getTrainingById(mockedTraining.getId()).get();
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(mockedTraining, result);
@@ -52,6 +54,7 @@ public class TrainingServiceImplTest {
         Assertions.assertEquals(result.getId(), mockedTraining.getId());
 
     }
+
     @Test
     void testDeleteTraining() {
         Training mockedTraining = TrainingMockData.getMockedTraining_1();
@@ -59,11 +62,12 @@ public class TrainingServiceImplTest {
         verify(trainingDao).delete(mockedTraining.getId());
 
     }
+
     @Test
     void testUpdateTraining() {
         Training mockedTraining = TrainingMockData.getMockedTraining_1();
         trainingService.updateTraining(mockedTraining);
-        verify(trainingDao).update(mockedTraining.getId(),mockedTraining);
+        verify(trainingDao).update(mockedTraining);
     }
 
     @Test

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -21,7 +22,7 @@ public class TraineeServiceImpl implements TraineeService {
     private UserUtils userUtils;
 
 
-    public void createTrainee(Trainee trainee) {
+    public Trainee createTrainee(Trainee trainee) {
         String username = userUtils.generateUsername(trainee.getUser());
         String password = UserUtils.generateRandomPassword();
         if (trainee.getUser() != null) {
@@ -29,29 +30,36 @@ public class TraineeServiceImpl implements TraineeService {
             trainee.getUser().setPassword(password);
 
         }
-        traineeDao.save(trainee);
+        return traineeDao.save(trainee);
     }
 
-    public boolean updateTrainee(Trainee trainee) {
+    public Optional<Trainee> updateTrainee(Trainee trainee) {
         areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
-        return traineeDao.update(trainee.getId(), trainee);
+        return traineeDao.update(trainee);
     }
 
-    public void deleteTrainee(Integer traineeId) {
-        getTraineeById(traineeId);
-        traineeDao.delete(traineeId);
+    public Optional<Trainee> getTraineeById(Integer traineeId) {
+        Optional<Trainee> optionalTrainee = traineeDao.findById(traineeId);
+        if (optionalTrainee.isPresent()) {
+            Trainee trainee = optionalTrainee.get();
+            boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+            if (areUsernameAndPasswordMatching) {
+                return optionalTrainee;
+            }
+        }
+        return Optional.empty();
     }
 
-    public Trainee getTraineeById(Integer traineeId) {
-        Trainee trainee = traineeDao.findById(traineeId);
-        areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
-        return trainee;
-    }
-
-    public Trainee getTraineeByUsername(String username) {
-        Trainee trainee = traineeDao.findByUsername(username);
-        areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
-        return trainee;
+    public Optional<Trainee> getTraineeByUsername(String username) {
+        Optional<Trainee> optionalTrainee = traineeDao.findByUsername(username);
+        if (optionalTrainee.isPresent()) {
+            Trainee trainee = optionalTrainee.get();
+            boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+            if (areUsernameAndPasswordMatching) {
+                return optionalTrainee;
+            }
+        }
+        return Optional.empty();
     }
 
     public List<Trainee> getAllTrainees() {
@@ -60,11 +68,20 @@ public class TraineeServiceImpl implements TraineeService {
                 .toList();
     }
 
-    public boolean changePassword(Integer traineeId, String currentPassword, String newPassword) {
-        Trainee trainee = traineeDao.findById(traineeId);
-        areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+    public boolean deleteTrainee(Integer traineeId) {
+        getTraineeById(traineeId);
+        return traineeDao.delete(traineeId);
+    }
 
-        if (currentPassword.equals(trainee.getUser().getPassword())) {
+    public boolean changePassword(Integer traineeId, String currentPassword, String newPassword) {
+        Optional<Trainee> optionalTrainee = traineeDao.findById(traineeId);
+        if (optionalTrainee.isEmpty()) {
+            return false;
+        }
+        Trainee trainee = optionalTrainee.get();
+        boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+
+        if (areUsernameAndPasswordMatching && currentPassword.equals(trainee.getUser().getPassword())) {
             trainee.getUser().setPassword(newPassword);
             traineeDao.save(trainee);
             return true;
@@ -73,27 +90,38 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     public void activateDeactivateTrainee(Integer traineeId, boolean activate) {
-        Trainee trainee = traineeDao.findById(traineeId);
-        User user = trainee.getUser();
-        areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
-        user.setActive(activate);
-        traineeDao.save(trainee);
+        Optional<Trainee> optionalTrainee = traineeDao.findById(traineeId);
+        if (optionalTrainee.isPresent()) {
+            Trainee trainee = optionalTrainee.get();
+            User user = trainee.getUser();
+            areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
+            user.setActive(activate);
+            traineeDao.save(trainee);
+        }
 
     }
 
-    public void deleteTraineeByUsername(String username) {
-        Trainee trainee = traineeDao.findByUsername(username);
-        areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
-        traineeDao.deleteByUsername(username);
+    public boolean deleteTraineeByUsername(String username) {
+        Optional<Trainee> optionalTrainee = traineeDao.findByUsername(username);
+        if (optionalTrainee.isEmpty()) {
+            return false;
+        }
+        Trainee trainee = optionalTrainee.get();
+        boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+        if (areUsernameAndPasswordMatching) {
+            traineeDao.deleteByUsername(username);
+            return true;
+        }
+        return false;
     }
 
     public boolean areUsernameAndPasswordMatching(String username, String password) {
         Assert.notNull(username, "Username must not be null");
         Assert.notNull(password, "Password must not be null");
-        Trainee trainee = traineeDao.findByUsername(username);
+        Optional<Trainee> optionalTrainee = traineeDao.findByUsername(username);
 
-        if (trainee != null && trainee.getUser() != null) {
-            return trainee.getUser().getPassword().equals(password);
+        if (optionalTrainee.isPresent() && optionalTrainee.get().getUser() != null) {
+            return optionalTrainee.get().getUser().getPassword().equals(password);
         } else {
             log.warn("Trainee or user is null for username: {}", username);
             throw new IllegalArgumentException("Invalid trainee or user for username: " + username);
