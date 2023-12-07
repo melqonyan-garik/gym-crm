@@ -1,0 +1,23 @@
+{
+  "id": 1,
+  "trainee": {
+    "id": 101,
+    "user": {
+      "id": 201,
+      "username": "traineeUser",
+      "password": "traineePassword"
+    },
+    "dateOfBirth": "1990-01-01",
+    "address": "Trainee Address"
+  },
+  "trainer": {
+    "user": {
+      "id": 401,
+      "username": "trainerUser",
+      "password": "trainerPassword"
+    }
+  },
+  "trainingName": "Java Programming",
+  "trainingDate": "2023-12-01",
+  "trainingDuration": 3.5
+}

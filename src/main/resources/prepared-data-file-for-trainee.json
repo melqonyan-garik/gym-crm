@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "dateOfBirth": "1990-01-15",
+    "address": "123 Main Street",
+    "user": {
+      "id": 101,
+      "firstName": "John",
+      "lastName": "Doe",
+      "username": "john.doe",
+      "password": "randomPassword"
+    }
+  },
+  {
+    "id": 2,
+    "dateOfBirth": "1985-07-10",
+    "address": "456 Oak Avenue",
+    "user": {
+      "id": 101,
+      "firstName": "John",
+      "lastName": "Smith"
+    }
+  }
+]
