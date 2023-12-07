@@ -3,9 +3,9 @@ package mock;
 import com.epam.dto.TrainerJsonDto;
 import com.epam.model.Trainer;
 import com.epam.model.TrainingType;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.SneakyThrows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +31,14 @@ public class TrainerMockData {
         return trainer;
     }
 
-    @SneakyThrows
+
     public static List<TrainerJsonDto> getMockedTrainer_2() {
         String stringTrainerData = MockFromFile.getMockData(TRAINER_RESOURCE_NAME);
-        return List.of(mapper.readValue(stringTrainerData, TrainerJsonDto[].class));
+        try {
+            return List.of(mapper.readValue(stringTrainerData, TrainerJsonDto[].class));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Cannot readValue for Trainer", e);
+        }
     }
 
 }

@@ -15,9 +15,7 @@ public class UserDao {
     EntityManager entityManager;
 
     public Set<String> getAllUsernames() {
-         return entityManager.createQuery("""
-                         SELECT u.username FROM User u
-                         """, String.class)
+         return entityManager.createQuery("SELECT u.username FROM User u", String.class)
                  .getResultStream()
                  .collect(Collectors.toSet());
     }

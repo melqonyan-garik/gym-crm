@@ -4,12 +4,14 @@ import com.epam.model.Training;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Slf4j
 public class TrainingDao {
 
     @PersistenceContext
@@ -32,18 +34,19 @@ public class TrainingDao {
     }
 
     public List<Training> findAll() {
-        Query query = entityManager.createQuery("""
-                SELECT t FROM Training t
-                """);
+        Query query = entityManager.createQuery("SELECT t FROM Training t");
         return query.getResultList();
     }
 
-    public boolean delete(Integer id) {
-        Optional<Training> optionalTraining = findById(id);
+    public boolean delete(Integer trainingId) {
+        Optional<Training> optionalTraining = findById(trainingId);
         if (optionalTraining.isPresent()) {
             entityManager.remove(optionalTraining.get());
+            log.info("Training with ID {} deleted successfully.", trainingId);
             return true;
         }
+
+        log.warn("Training with ID {} not found for deletion.", trainingId);
         return false;
     }
 }

@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 public class TrainerServiceImplTest {
 
@@ -77,12 +78,13 @@ public class TrainerServiceImplTest {
         assertFalse(areUsernameAndPasswordMatching);
         verify(trainerDAO).findByUsername(username);
     }
+
     @Test
     void testAreUsernameAndPasswordMatching_NullUsername() {
         String username = null;
         String password = "testPassword";
 
-        assertThrows(IllegalArgumentException.class,()-> trainerService.areUsernameAndPasswordMatching(username, password));
+        assertThrows(IllegalArgumentException.class, () -> trainerService.areUsernameAndPasswordMatching(username, password));
     }
 
     @Test
@@ -90,7 +92,7 @@ public class TrainerServiceImplTest {
         String username = "testUser";
         String password = null;
 
-        assertThrows(IllegalArgumentException.class,()-> trainerService.areUsernameAndPasswordMatching(username, password));
+        assertThrows(IllegalArgumentException.class, () -> trainerService.areUsernameAndPasswordMatching(username, password));
     }
 
     @Test
@@ -98,20 +100,23 @@ public class TrainerServiceImplTest {
         String username = null;
         String password = null;
 
-        assertThrows(IllegalArgumentException.class,()-> trainerService.areUsernameAndPasswordMatching(username, password));
+        assertThrows(IllegalArgumentException.class, () -> trainerService.areUsernameAndPasswordMatching(username, password));
     }
+
     @Test
     public void testCreateTrainers() {
         Trainer mockedTrainer1 = TrainerMockData.getMockedTrainer_1();
 
         Trainer mockedTrainer2 = Mappers.convertTrainerJsonDtoToTrainer(TrainerMockData.getMockedTrainer_2().get(0));
-
+        when(trainerDAO.save(mockedTrainer1)).thenReturn(mockedTrainer1);
+        when(trainerDAO.save(mockedTrainer2)).thenReturn(mockedTrainer2);
         trainerService.createTrainer(mockedTrainer1);
         trainerService.createTrainer(mockedTrainer2);
 
         verify(trainerDAO).save(mockedTrainer1);
         verify(trainerDAO).save(mockedTrainer2);
     }
+
     @Test
     void testDeleteTrainer() {
         Integer trainerIdToDelete = 1;
@@ -122,6 +127,7 @@ public class TrainerServiceImplTest {
         verify(trainerDAO).delete(trainerIdToDelete);
 
     }
+
     @Test
     void testUpdateTrainer() {
         TrainerJsonDto mockedTrainerJson = TrainerMockData.getMockedTrainer_2().get(1);
@@ -131,22 +137,37 @@ public class TrainerServiceImplTest {
         trainerService.updateTrainer(mockedTrainer);
         verify(trainerDAO).update(mockedTrainer);
     }
+
     @Test
-    void testActivateDeactivateTrainer() {
+    void testActivateTrainer() {
+        Trainer mockedTrainer = TrainerMockData.getMockedTrainer_1();
+        mockedTrainer.getUser().setActive(false);
+        when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername()))
+                .thenReturn(Optional.of(mockedTrainer));
+        when(trainerDAO.findById(mockedTrainer.getId()))
+                .thenReturn(Optional.of(mockedTrainer));
+        trainerService.activateTrainer(mockedTrainer.getId());
+        Assertions.assertTrue(mockedTrainer.getUser().isActive());
+        verify(trainerDAO).update(mockedTrainer);
+    }
+
+    @Test
+    void testDeactivateTrainer() {
         Trainer mockedTrainer = TrainerMockData.getMockedTrainer_1();
         when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(Optional.of(mockedTrainer));
         when(trainerDAO.findById(mockedTrainer.getId())).thenReturn(Optional.of(mockedTrainer));
-        trainerService.activateDeactivateTrainer(mockedTrainer.getId(), mockedTrainer.getUser().isActive());
-
-        verify(trainerDAO).save(mockedTrainer);
+        trainerService.deactivateTrainer(mockedTrainer.getId());
+        Assertions.assertFalse(mockedTrainer.getUser().isActive());
+        verify(trainerDAO).update(mockedTrainer);
     }
+
     @Test
     void testChangePassword() {
         Trainer mockedTrainer = TrainerMockData.getMockedTrainer_1();
         when(trainerDAO.findById(mockedTrainer.getId())).thenReturn(Optional.of(mockedTrainer));
         when(trainerDAO.findByUsername(mockedTrainer.getUser().getUsername())).thenReturn(Optional.of(mockedTrainer));
-        trainerService.changePassword(mockedTrainer.getId(),mockedTrainer.getUser().getPassword()
-                ,"newPass");
+        trainerService.changePassword(mockedTrainer.getId(), mockedTrainer.getUser().getPassword()
+                , "newPass");
         verify(trainerDAO).save(mockedTrainer);
     }
 

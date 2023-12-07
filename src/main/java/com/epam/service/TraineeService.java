@@ -15,6 +15,7 @@ public interface TraineeService {
     boolean deleteTrainee(Integer traineeId);
     boolean deleteTraineeByUsername(String username);
     boolean changePassword(Integer traineeId, String currentPassword, String newPassword);
-    void activateDeactivateTrainee(Integer traineeId, boolean activate);
+    void activateTrainee(Integer traineeId);
+    void deactivateTrainee(Integer traineeId);
     boolean areUsernameAndPasswordMatching(String username, String password);
 }

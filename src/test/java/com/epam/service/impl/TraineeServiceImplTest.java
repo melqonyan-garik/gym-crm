@@ -34,6 +34,22 @@ public class TraineeServiceImplTest {
     private TraineeServiceImpl traineeService;
 
     @Test
+    void testFindById() {
+        TraineeJsonDto mockDataTrainee = TraineeMockData.getMockedTrainee_2().get(0);
+        Trainee mockedTrainee = Mappers.convertTraineeJsonDtoToTrainee(mockDataTrainee);
+        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(Optional.of(mockedTrainee));
+        when(traineeDAO.findById(mockedTrainee.getId())).thenReturn(Optional.of(mockedTrainee));
+
+        Trainee result = traineeService.getTraineeById(mockedTrainee.getId()).get();
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(mockedTrainee, result);
+        Assertions.assertEquals(result.getId(), mockedTrainee.getId());
+
+
+    }
+
+    @Test
     void testFindByUsername() {
         TraineeJsonDto traineeJsonDto = TraineeMockData.getMockedTrainee_2().get(0);
         Trainee mockedTrainee = Mappers.convertTraineeJsonDtoToTrainee(traineeJsonDto);
@@ -115,15 +131,13 @@ public class TraineeServiceImplTest {
     }
 
     @Test
-    public void testGetAllTrainee() {
+    public void testCreateTrainees() {
         Trainee trainee1 = new Trainee();
-        trainee1.setId(1);
-        trainee1.setAddress("Address1");
-
         Trainee trainee2 = new Trainee();
         trainee2.setId(2);
         trainee2.setAddress("Address2");
-
+        when(traineeDAO.save(trainee1)).thenReturn(trainee1);
+        when(traineeDAO.save(trainee2)).thenReturn(trainee2);
         traineeService.createTrainee(trainee1);
         traineeService.createTrainee(trainee2);
 
@@ -161,15 +175,28 @@ public class TraineeServiceImplTest {
     }
 
     @Test
-    void testActivateDeactivateTrainee() {
+    void testActivateTrainee() {
         Trainee mockedTrainee = TraineeMockData.getMockedTrainee_1();
-        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername())).thenReturn(Optional.of(mockedTrainee));
-        when(traineeDAO.findById(mockedTrainee.getId())).thenReturn(Optional.of(mockedTrainee));
-        traineeService.activateDeactivateTrainee(mockedTrainee.getId(), mockedTrainee.getUser().isActive());
+        mockedTrainee.getUser().setActive(false);
+        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername()))
+                .thenReturn(Optional.of(mockedTrainee));
+        when(traineeDAO.findById(mockedTrainee.getId()))
+                .thenReturn(Optional.of(mockedTrainee));
 
-        verify(traineeDAO).save(mockedTrainee);
+        traineeService.activateTrainee(mockedTrainee.getId());
+        verify(traineeDAO).update(mockedTrainee);
     }
+    @Test
+    void testDeactivateTrainee() {
+        Trainee mockedTrainee = TraineeMockData.getMockedTrainee_1();
+        when(traineeDAO.findByUsername(mockedTrainee.getUser().getUsername()))
+                .thenReturn(Optional.of(mockedTrainee));
+        when(traineeDAO.findById(mockedTrainee.getId()))
+                .thenReturn(Optional.of(mockedTrainee));
 
+        traineeService.deactivateTrainee(mockedTrainee.getId());
+        verify(traineeDAO).update(mockedTrainee);
+    }
     @Test
     void testChangePassword() {
         Trainee mockedTrainee = TraineeMockData.getMockedTrainee_1();

@@ -1,16 +1,25 @@
 package mock;
 
-import lombok.SneakyThrows;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class MockFromFile {
 
-    @SneakyThrows
+
     public static String getMockData(String resourceName) {
-        return getResourceContent( resourceName);
+        return getResourceContent(resourceName);
     }
 
-    @SneakyThrows
+
     public static String getResourceContent(String resourceName) {
-        return new String(MockFromFile.class.getClassLoader().getResourceAsStream(resourceName).readAllBytes());
+
+        try {
+            URL resourceUrl = MockFromFile.class.getResource("/" + resourceName);
+
+            return new String(Files.readAllBytes(Paths.get(resourceUrl.toURI())));
+        } catch (Exception e) {
+            throw new RuntimeException("cannot read file from resource :" + resourceName, e);
+        }
     }
 }

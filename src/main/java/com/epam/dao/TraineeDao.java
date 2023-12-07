@@ -11,6 +11,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @Repository
 @Transactional
+@Slf4j
 public class TraineeDao {
     @PersistenceContext
     EntityManager entityManager;
@@ -48,18 +50,19 @@ public class TraineeDao {
 
 
     public List<Trainee> findAll() {
-        Query query = entityManager.createQuery("""
-                SELECT t FROM Trainee t
-                """);
+        Query query = entityManager.createQuery("SELECT t FROM Trainee t");
         return query.getResultList();
     }
 
     public boolean delete(Integer traineeId) {
         Optional<Trainee> optionalTrainee = findById(traineeId);
-        if (optionalTrainee.isPresent()){
+        if (optionalTrainee.isPresent()) {
             entityManager.remove(optionalTrainee.get());
+            log.info("Trainee with ID {} deleted successfully.", traineeId);
             return true;
         }
+
+        log.warn("Trainee with ID {} not found for deletion.", traineeId);
         return false;
     }
 
@@ -67,8 +70,11 @@ public class TraineeDao {
         Optional<Trainee> optionalTrainee = findByUsername(username);
         if (optionalTrainee.isPresent()) {
             entityManager.remove(optionalTrainee.get());
+            log.info("Trainee with username {} deleted successfully.", username);
             return true;
         }
+
+        log.info("Trainee with username {} not found for deletion.", username);
         return false;
     }
 
@@ -90,7 +96,10 @@ public class TraineeDao {
             trainee.getTrainers().clear();
             newTrainers.forEach(newTrainer -> newTrainer.getTrainees().add(trainee));
             trainee.setTrainers(newTrainers);
+        } else {
+            log.warn("No trainee found for ID {}. Unable to update trainers list.", traineeId);
         }
+
     }
 
 }

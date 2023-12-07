@@ -5,9 +5,9 @@ import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
 import com.epam.model.TrainingType;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.SneakyThrows;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,10 +41,14 @@ public class TrainingMockData {
     }
 
 
-    @SneakyThrows
+
     public static TrainingJsonDto getMockedTraining_2(String resourceName) {
         String stringTrainingData = MockFromFile.getMockData(resourceName);
-        return mapper.readValue(stringTrainingData, TrainingJsonDto.class);
+        try {
+            return mapper.readValue(stringTrainingData, TrainingJsonDto.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Cannot readValue for Training", e);
+        }
     }
 
 }

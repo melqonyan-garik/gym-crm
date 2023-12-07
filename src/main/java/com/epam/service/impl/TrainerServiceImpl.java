@@ -23,26 +23,51 @@ public class TrainerServiceImpl implements TrainerService {
 
 
     public Trainer createTrainer(Trainer trainer) {
-        String username = userUtils.generateUsername(trainer.getUser());
-        String password = UserUtils.generateRandomPassword();
-        if (trainer.getUser() != null) {
-            trainer.getUser().setUsername(username);
-            trainer.getUser().setPassword(password);
+        try {
+            String username = userUtils.generateUsername(trainer.getUser());
+            String password = UserUtils.generateRandomPassword();
+            if (trainer.getUser() != null) {
+                trainer.getUser().setUsername(username);
+                trainer.getUser().setPassword(password);
 
+            }
+            Trainer createdTrainer = trainerDao.save(trainer);
+
+            log.info("Trainer created successfully. Username: {}, ID: {}", username, createdTrainer.getId());
+            return createdTrainer;
+        } catch (Exception e) {
+            log.error("Error creating trainer. Details: {}", e.getMessage(), e);
+            throw new RuntimeException("Error creating trainer.", e);
         }
-        return trainerDao.save(trainer);
     }
 
     public Optional<Trainer> updateTrainer(Trainer trainer) {
-        areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
-        return trainerDao.update(trainer);
+        boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+        if (!areUsernameAndPasswordMatching) {
+            log.info("Trainer update failed because username: {} and password: {} do not match.", trainer.getUser().getUsername(), trainer.getUser().getPassword());
+            return Optional.empty();
+        }
+
+        Optional<Trainer> optionalTrainer = trainerDao.update(trainer);
+        if (optionalTrainer.isPresent()) {
+            log.info("Trainer updated successfully. Username: {}, ID: {}", trainer.getUser().getUsername(), trainer.getId());
+        } else {
+            log.warn("Trainer not found for update. Username: {}", trainer.getUser().getUsername());
+        }
+        return optionalTrainer;
     }
 
     public Optional<Trainer> getTrainerById(Integer trainerId) {
         Optional<Trainer> optionalTrainer = trainerDao.findById(trainerId);
-        if (optionalTrainer.isPresent()) {
-            Trainer trainer = optionalTrainer.get();
-            areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+        if (optionalTrainer.isEmpty()) {
+            log.warn("Trainer with ID {} not found for activation/deactivation.", trainerId);
+            return Optional.empty();
+        }
+        Trainer trainer = optionalTrainer.get();
+        boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+        if (!areUsernameAndPasswordMatching) {
+            log.info("Trainer update failed because username: {} and password: {} do not match.", trainer.getUser().getUsername(), trainer.getUser().getPassword());
+            return Optional.empty();
         }
         return optionalTrainer;
     }
@@ -54,15 +79,19 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     public boolean deleteTrainer(Integer trainerId) {
-        Optional<Trainer> optionalTrainer = getTrainerById(trainerId);
-        if (optionalTrainer.isPresent()) {
-            Trainer trainer = optionalTrainer.get();
-            boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
-            if (areUsernameAndPasswordMatching) {
-                return trainerDao.delete(trainerId);
-            }
+        Optional<Trainer> optionalTrainer = trainerDao.findById(trainerId);
+        if (optionalTrainer.isEmpty()) {
+            log.warn("Trainer with id {} not found. Deletion aborted.", trainerId);
+            return false;
         }
-        return false;
+
+        Trainer trainer = optionalTrainer.get();
+        boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+        if (!areUsernameAndPasswordMatching) {
+            log.info("Trainer deletion failed because username: {} and password: {} do not match for trainer id :{}",
+                    trainer.getUser().getUsername(), trainer.getUser().getPassword(), trainerId);
+        }
+        return trainerDao.delete(trainerId);
 
     }
 
@@ -82,16 +111,46 @@ public class TrainerServiceImpl implements TrainerService {
         return false;
     }
 
-    public void activateDeactivateTrainer(Integer trainerId, boolean activate) {
+    public void activateTrainer(Integer trainerId) {
         Optional<Trainer> optionalTrainer = trainerDao.findById(trainerId);
-        if (optionalTrainer.isPresent()) {
-            Trainer trainer = optionalTrainer.get();
-            User user = trainer.getUser();
-            areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
-            user.setActive(activate);
-            trainerDao.save(trainer);
+        if (optionalTrainer.isEmpty()) {
+            log.warn("Trainer with ID {} not found for activation", trainerId);
+            return;
         }
 
+        Trainer trainer = optionalTrainer.get();
+        User user = trainer.getUser();
+
+        boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
+        if (!areUsernameAndPasswordMatching) {
+            log.warn("Username and password do not match for trainer with ID {}. Activation aborted.", trainerId);
+            return;
+        }
+
+        user.setActive(true);
+        trainerDao.update(trainer);
+        log.info("Trainer with ID {}, activated successfully.", trainerId);
+    }
+
+    public void deactivateTrainer(Integer trainerId) {
+        Optional<Trainer> optionalTrainer = trainerDao.findById(trainerId);
+        if (optionalTrainer.isEmpty()) {
+            log.warn("Trainer with ID {} not found for deactivation.", trainerId);
+            return;
+        }
+
+        Trainer trainer = optionalTrainer.get();
+        User user = trainer.getUser();
+
+        boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
+        if (!areUsernameAndPasswordMatching) {
+            log.warn("Username and password do not match for trainer with ID {}. Deactivation aborted.", trainerId);
+            return;
+        }
+
+        user.setActive(false);
+        trainerDao.update(trainer);
+        log.info("Trainer with ID {}, deactivated successfully.", trainerId);
     }
 
     public boolean areUsernameAndPasswordMatching(String username, String password) {
@@ -102,8 +161,7 @@ public class TrainerServiceImpl implements TrainerService {
         if (optionalTrainer.isPresent() && optionalTrainer.get().getUser() != null) {
             return optionalTrainer.get().getUser().getPassword().equals(password);
         } else {
-            log.warn("Trainer or user is null for username: {}", username);
-            throw new IllegalArgumentException("Invalid trainer or user for username: " + username);
+            return false;
         }
     }
 }

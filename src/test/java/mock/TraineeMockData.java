@@ -2,9 +2,9 @@ package mock;
 
 import com.epam.dto.TraineeJsonDto;
 import com.epam.model.Trainee;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.SneakyThrows;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -33,10 +33,12 @@ public class TraineeMockData {
     }
 
 
-
-    @SneakyThrows
     public static List<TraineeJsonDto> getMockedTrainee_2() {
         String stringTraineeData = MockFromFile.getMockData(TRAINEE_RESOURCE_NAME);
-        return List.of(mapper.readValue(stringTraineeData, TraineeJsonDto[].class));
+        try {
+            return List.of(mapper.readValue(stringTraineeData, TraineeJsonDto[].class));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Cannot readValue for Trainee", e);
+        }
     }
 }

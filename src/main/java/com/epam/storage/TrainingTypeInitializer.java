@@ -13,11 +13,11 @@ public class TrainingTypeInitializer {
 
     @Transactional
     public void initializeTrainingTypes() {
-        entityManager.createNativeQuery("INSERT INTO training_type (id, training_type_name) VALUES (1, 'Technical')")
+        entityManager.createNativeQuery("INSERT INTO training_type (training_type_name) " +
+                        "VALUES ('Technical'), ('Soft Skills'), ('Leadership')")
                 .executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO training_type (id, training_type_name) VALUES (2, 'Soft Skills')")
-                .executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO training_type (id, training_type_name) VALUES (3, 'Leadership')")
-                .executeUpdate();
+
+
+
     }
 }

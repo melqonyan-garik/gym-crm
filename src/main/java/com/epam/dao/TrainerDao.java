@@ -11,6 +11,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @Repository
 @Transactional
+@Slf4j
 public class TrainerDao {
 
     @PersistenceContext
@@ -48,9 +50,7 @@ public class TrainerDao {
     }
 
     public List<Trainer> findAll() {
-        Query query = entityManager.createQuery("""
-                SELECT t FROM Trainer t
-                """);
+        Query query = entityManager.createQuery("SELECT t FROM Trainer t");
         return query.getResultList();
     }
 
@@ -58,8 +58,11 @@ public class TrainerDao {
         Optional<Trainer> optionalTrainer = findById(trainerId);
         if (optionalTrainer.isPresent()) {
             entityManager.remove(optionalTrainer.get());
+            log.info("Trainer with ID {} deleted successfully.", trainerId);
             return true;
         }
+
+        log.warn("Trainer with ID {} not found for deletion.", trainerId);
         return false;
     }
 
@@ -71,7 +74,10 @@ public class TrainerDao {
 
             newTrainees.forEach(newTrainee -> newTrainee.getTrainers().add(trainer));
             trainer.setTrainees(newTrainees);
+        } else {
+            log.warn("No trainer found for ID {}. Unable to update trainers list.", trainerId);
         }
+
     }
 
     List<Training> getTrainingsByUsername(String username) {

@@ -1,21 +1,20 @@
 package com.epam.storage;
 
-import com.epam.dao.TrainerDao;
 import com.epam.dto.TraineeJsonDto;
 import com.epam.dto.TrainerJsonDto;
 import com.epam.facade.Facade;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 @Component
@@ -28,13 +27,10 @@ public class StorageBean {
     private final ObjectMapper objectMapper;
     private final TrainingTypeInitializer trainingTypeInitializer;
 
-    @PersistenceContext
-    EntityManager entityManager;
-
     @Autowired
     public StorageBean(@Value("${trainee.storage.data.file.path}") Resource traineeResource,
                        @Value("${trainer.storage.data.file.path}") Resource trainerResource,
-                       Facade facade, ObjectMapper objectMapper, TrainerDao trainerDao, TrainingTypeInitializer trainingTypeInitializer) {
+                       Facade facade, ObjectMapper objectMapper, TrainingTypeInitializer trainingTypeInitializer) {
         this.traineeResource = traineeResource;
         this.trainerResource = trainerResource;
         this.facade = facade;
@@ -78,14 +74,26 @@ public class StorageBean {
                 .forEach(facade::saveTraineeFromTraineeJsonData);
     }
 
-    @SneakyThrows
+
     private String getTraineeFileContent() {
-        return new String(StorageBean.class.getClassLoader().getResourceAsStream(traineeResource.getFilename()).readAllBytes());
+        try {
+            File file = traineeResource.getFile();
+            return new String(Files.readAllBytes(Paths.get(file.getPath())));
+        } catch (IOException e) {
+            log.error("Cannot read content for Trainee {}", traineeResource.getFilename(), e);
+            throw new RuntimeException();
+        }
     }
 
-    @SneakyThrows
     private String getTrainerFileContent() {
-        return new String(StorageBean.class.getClassLoader().getResourceAsStream(trainerResource.getFilename()).readAllBytes());
+        try {
+            File file = trainerResource.getFile();
+            return new String(Files.readAllBytes(Paths.get(file.getPath())));
+        } catch (IOException e) {
+            log.error("Cannot read content for Trainer {}", trainerResource.getFilename(), e);
+            throw new RuntimeException();
+
+        }
     }
 }
 
