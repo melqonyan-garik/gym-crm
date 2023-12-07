@@ -1,118 +1,84 @@
 package com.epam.service.impl;
 
-import com.epam.config.AppConfig;
+import com.epam.dao.TrainingDao;
+import com.epam.dto.TrainingJsonDto;
+import com.epam.mappers.Mappers;
 import com.epam.model.Training;
-import com.epam.model.TrainingType;
+import mock.TrainingMockData;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 public class TrainingServiceImplTest {
+    public static final String TRAINING_RESOURCE_NAME = "prepared-data-file-for-training.json";
+    @InjectMocks
     private TrainingServiceImpl trainingService;
-
-    @BeforeEach
-    public void setUp() {
-        ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
-        this.trainingService = context.getBean(TrainingServiceImpl.class);
-
-    }
+    @Mock
+    private TrainingDao trainingDao;
 
     @Test
     public void testCreateTraining() {
-        // Create a Training instance
-        Training training = new Training();
-        training.setId(1);
-        training.setTrainingName("Java Basics");
-        training.setTrainingDate(LocalDate.now());
-        training.setTrainingDuration(2);
-        TrainingType trainingType = new TrainingType();
-        trainingType.setId(1);
-        trainingType.setTrainingTypeName("Java Basics");
-        trainingType.setTrainings(List.of());
-        trainingType.setTrainers(List.of());
-        training.setTrainingType(trainingType);
+        TrainingJsonDto mockedTrainingJsonData = TrainingMockData.getMockedTraining_2(TRAINING_RESOURCE_NAME);
+        Training mockedTrainingData = Mappers.convertTrainingJsonDtoToTraining(mockedTrainingJsonData);
 
+        trainingService.createTraining(mockedTrainingData);
+        verify(trainingDao).save(mockedTrainingData);
+    }
 
-        trainingService.createTraining(training);
+    @Test
+    void testFindById() {
+        TrainingJsonDto mockedTrainingJson = TrainingMockData.getMockedTraining_2(
+                TRAINING_RESOURCE_NAME);
+        Training mockedTraining = Mappers.convertTrainingJsonDtoToTraining(mockedTrainingJson);
+        when(trainingDao.findById(mockedTraining.getId())).thenReturn(Optional.of(mockedTraining));
+        Training result = trainingService.getTrainingById(mockedTraining.getId()).get();
 
-        List<Training> allTrainings = trainingService.getAllTrainings();
-        Assertions.assertEquals(allTrainings.size(), 1);
-        Training createdTraining = allTrainings.get(0);
-        Assertions.assertEquals(createdTraining.getId(), training.getId());
-        Assertions.assertEquals(createdTraining.getTrainingName(), training.getTrainingName());
-        Assertions.assertEquals(createdTraining.getTrainingDate(), training.getTrainingDate());
-        Assertions.assertEquals(createdTraining.getTrainingDuration(), training.getTrainingDuration());
-        Assertions.assertEquals(createdTraining.getTrainingType().getTrainingTypeName(), training.getTrainingType().getTrainingTypeName());
-        Assertions.assertEquals(createdTraining.getTrainingType().getId(), training.getTrainingType().getId());
-        Assertions.assertEquals(createdTraining.getTrainingType().getTrainings(), Collections.emptyList());
-        Assertions.assertEquals(createdTraining.getTrainingType().getTrainers(), Collections.emptyList());
-
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(mockedTraining, result);
+        Assertions.assertEquals(mockedTraining.getTrainingName(), result.getTrainingName());
+        Assertions.assertEquals(mockedTraining.getTrainingDuration(), result.getTrainingDuration());
+        Assertions.assertEquals(mockedTraining.getTrainingName(), result.getTrainingName());
+        Assertions.assertEquals(mockedTraining.getId(), result.getId());
+        Assertions.assertEquals(mockedTraining.getTrainee(), result.getTrainee());
+        Assertions.assertEquals(mockedTraining.getTrainer(), result.getTrainer());
+        Assertions.assertEquals(result.getId(), mockedTraining.getId());
 
     }
 
     @Test
-    public void testDeleteTraining() {
-        Training training = new Training();
-        training.setId(1);
-        training.setTrainingName("Java Advanced");
-        trainingService.createTraining(training);
-        trainingService.deleteTraining(1);
+    void testDeleteTraining() {
+        Training mockedTraining = TrainingMockData.getMockedTraining_1();
+        trainingService.deleteTraining(mockedTraining.getId());
+        verify(trainingDao).delete(mockedTraining.getId());
 
-        Assertions.assertNull(trainingService.getTrainingById(1));
     }
 
     @Test
-    public void testUpdateTraining() {
-        Training training = new Training();
-        training.setTrainingName("Database Fundamentals");
-        trainingService.createTraining(training);
-        Training createdTraining = trainingService.getAllTrainings().get(0);
-        createdTraining.setTrainingName("Database Advanced");
-        trainingService.updateTraining(createdTraining);
-
-        Assertions.assertEquals(createdTraining.getTrainingName(), training.getTrainingName());
+    void testUpdateTraining() {
+        Training mockedTraining = TrainingMockData.getMockedTraining_1();
+        trainingService.updateTraining(mockedTraining);
+        verify(trainingDao).update(mockedTraining);
     }
 
     @Test
-    public void testGetTrainingById() {
-        Training training = new Training();
-        training.setId(1);
-        training.setTrainingName("Python Basics");
+    void testGetAllTraining() {
+        Training training1 = TrainingMockData.getMockedTraining_1();
+        Training training2 = Mappers.convertTrainingJsonDtoToTraining(TrainingMockData.getMockedTraining_2(TRAINING_RESOURCE_NAME));
+        List<Training> allTrainings = List.of(training1, training2);
+        when(trainingDao.findAll()).thenReturn(allTrainings);
 
-        trainingService.createTraining(training);
-        Training createdTraining = trainingService.getAllTrainings().get(0);
-
-
-        Training retrievedTraining = trainingService.getTrainingById(createdTraining.getId());
-
-
-        Assertions.assertEquals(createdTraining, retrievedTraining);
+        List<Training> result = trainingService.getAllTrainings();
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(2, result.size());
     }
-
-    @Test
-    public void testGetAllTrainings() {
-        Training training1 = new Training();
-        training1.setId(1);
-        training1.setTrainingName("Machine Learning");
-
-        Training training2 = new Training();
-        training2.setId(2);
-        training2.setTrainingName("Deep Learning");
-
-        trainingService.createTraining(training1);
-        trainingService.createTraining(training2);
-
-        List<Training> allTrainings = trainingService.getAllTrainings();
-
-        Assertions.assertEquals(2, allTrainings.size());
-        Assertions.assertTrue(allTrainings.contains(training1));
-        Assertions.assertTrue(allTrainings.contains(training2));
-    }
-
 }

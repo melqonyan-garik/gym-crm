@@ -1,3 +1,4 @@
+/*
 package com.epam.dao;
 
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 @Slf4j
 @Repository
+TODO unusable class we can remove it
 public class GenericDao<T> {
 
     private final Map<String, Map<Integer, T>> storage = new HashMap<>();
@@ -62,3 +64,4 @@ public class GenericDao<T> {
     }
 }
 
+*/

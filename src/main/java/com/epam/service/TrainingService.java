@@ -3,11 +3,13 @@ package com.epam.service;
 import com.epam.model.Training;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TrainingService {
-    void createTraining(Training trainee);
-    void updateTraining(Training trainee);
-    void deleteTraining(Integer traineeId);
-    Training getTrainingById(Integer traineeId);
-    List<Training> getAllTrainings();
+
+ Training createTraining(Training training);
+ Optional<Training> updateTraining(Training training);
+ Optional<Training> getTrainingById(Integer trainingId);
+ List<Training> getAllTrainings();
+ boolean deleteTraining(Integer trainingId);
 }

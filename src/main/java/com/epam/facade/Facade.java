@@ -1,5 +1,8 @@
 package com.epam.facade;
 
+import com.epam.dto.TraineeJsonDto;
+import com.epam.dto.TrainerJsonDto;
+import com.epam.mappers.Mappers;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
@@ -56,6 +59,17 @@ public class Facade {
             log.error("Error fetching all trainings.", e);
             throw e;
         }
+    }
+
+    public void saveTraineeFromTraineeJsonData(TraineeJsonDto traineeJsonDto) {
+        Trainee trainee = Mappers.convertTraineeJsonDtoToTrainee(traineeJsonDto);
+        traineeService.createTrainee(trainee);
 
     }
+
+    public void saveTrainer(TrainerJsonDto trainerJsonDto) {
+        Trainer trainer = Mappers.convertTrainerJsonDtoToTrainer(trainerJsonDto);
+        trainerService.createTrainer(trainer);
+    }
+
 }

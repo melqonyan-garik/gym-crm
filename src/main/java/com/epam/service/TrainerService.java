@@ -3,11 +3,16 @@ package com.epam.service;
 import com.epam.model.Trainer;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TrainerService {
-    void createTrainer(Trainer trainee);
-    void updateTrainer(Trainer trainee);
-    void deleteTrainer(Integer traineeId);
-    Trainer getTrainerById(Integer traineeId);
+    Trainer createTrainer(Trainer trainer);
+    Optional<Trainer> updateTrainer(Trainer trainer);
+    Optional<Trainer> getTrainerById(Integer trainerId);
     List<Trainer> getAllTrainer();
+    boolean deleteTrainer(Integer trainerId);
+    boolean changePassword(Integer trainerId, String currentPassword, String newPassword);
+    void activateTrainer(Integer trainerId);
+    void deactivateTrainer(Integer trainerId);
+    boolean areUsernameAndPasswordMatching(String username, String password);
 }

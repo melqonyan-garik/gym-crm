@@ -1,38 +1,69 @@
 package com.epam.storage;
 
 import com.epam.dto.TraineeJsonDto;
-import com.epam.model.Trainee;
-import com.epam.model.User;
-import com.epam.service.impl.TraineeServiceImpl;
+import com.epam.dto.TrainerJsonDto;
+import com.epam.facade.Facade;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 @Component
 @Slf4j
+@Transactional
 public class StorageBean {
-    private final Resource resource;
-    private final TraineeServiceImpl traineeServiceImpl;
+    private final Resource traineeResource;
+    private final Resource trainerResource;
+    private final Facade facade;
     private final ObjectMapper objectMapper;
+    private final TrainingTypeInitializer trainingTypeInitializer;
 
     @Autowired
-    public StorageBean(@Value("${storage.data.file.path}") Resource resource, TraineeServiceImpl traineeServiceImpl, ObjectMapper objectMapper) {
-        this.resource = resource;
-        this.traineeServiceImpl = traineeServiceImpl;
+    public StorageBean(@Value("${trainee.storage.data.file.path}") Resource traineeResource,
+                       @Value("${trainer.storage.data.file.path}") Resource trainerResource,
+                       Facade facade, ObjectMapper objectMapper, TrainingTypeInitializer trainingTypeInitializer) {
+        this.traineeResource = traineeResource;
+        this.trainerResource = trainerResource;
+        this.facade = facade;
         this.objectMapper = objectMapper;
+        this.trainingTypeInitializer = trainingTypeInitializer;
+
     }
 
     public void initializeStorage() {
+        initializeTrainee();
+        log.info("Trainee Storage initialization completed successfully.");
 
-        String content = getFileContent();
+        initializeTrainer();
+        log.info("Trainer Storage initialization completed successfully.");
+
+        trainingTypeInitializer.initializeTrainingTypes();
+        log.info("Training type initialization completed successfully.");
+    }
+
+    private void initializeTrainer() {
+        String content = getTrainerFileContent();
+        TrainerJsonDto[] trainerData;
+        try {
+            trainerData = objectMapper.readValue(content, TrainerJsonDto[].class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Arrays.stream(trainerData)
+                .forEach(facade::saveTrainer);
+    }
+
+    private void initializeTrainee() {
+        String content = getTraineeFileContent();
         TraineeJsonDto[] traineeData;
         try {
             traineeData = objectMapper.readValue(content, TraineeJsonDto[].class);
@@ -40,35 +71,29 @@ public class StorageBean {
             throw new RuntimeException(e);
         }
         Arrays.stream(traineeData)
-                .forEach(f -> {
-                    Trainee trainee = new Trainee();
-                    trainee.setId(f.getId());
-                    trainee.setAddress(f.getAddress());
-                    trainee.setDateOfBirth(f.getDateOfBirth());
-                    User user = new User();
-                    user.setFirstName(f.getUser().getFirstName());
-                    user.setLastName(f.getUser().getLastName());
-                    user.setUsername(f.getUser().getUsername());
-                    user.setPassword(f.getUser().getPassword());
-                    user.setActive(f.getUser().isActive());
-                    trainee.setUser(user);
-                    traineeServiceImpl.createTrainee(trainee);
-                });
-       log. info("Storage initialization completed successfully.");
-
+                .forEach(facade::saveTraineeFromTraineeJsonData);
     }
 
-    private String getFileContent() {
-        StringBuilder content = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                content.append(line).append("\n");
-            }
+
+    private String getTraineeFileContent() {
+        try {
+            File file = traineeResource.getFile();
+            return new String(Files.readAllBytes(Paths.get(file.getPath())));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Cannot read content for Trainee {}", traineeResource.getFilename(), e);
+            throw new RuntimeException();
         }
-        return content.toString();
+    }
+
+    private String getTrainerFileContent() {
+        try {
+            File file = trainerResource.getFile();
+            return new String(Files.readAllBytes(Paths.get(file.getPath())));
+        } catch (IOException e) {
+            log.error("Cannot read content for Trainer {}", trainerResource.getFilename(), e);
+            throw new RuntimeException();
+
+        }
     }
 }
 

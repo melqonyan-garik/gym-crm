@@ -1,0 +1,42 @@
+[
+  {
+    "user": {
+      "firstName": "trainer_firstname_1",
+      "lastName": "trainer_lastname_1",
+      "active": true
+    },
+
+    "trainings": [
+      {
+        "trainingName": "Java Basics",
+        "trainingDate": "2023-12-01",
+        "trainingDuration": 3.0
+      },
+      {
+        "trainingName": "Advanced Java",
+        "trainingDate": "2023-12-10",
+        "trainingDuration": 5.0
+      }
+    ]
+  },
+  {
+    "user": {
+      "firstName": "trainer_firstname_2",
+      "lastName": "trainer_lastname_2",
+      "active": false
+    },
+
+    "trainings": [
+      {
+        "trainingName": "Python Fundamentals",
+        "trainingDate": "2023-12-05",
+        "trainingDuration": 4.0
+      },
+      {
+        "trainingName": "Web Development with Django",
+        "trainingDate": "2023-12-15",
+        "trainingDuration": 6.0
+      }
+    ]
+  }
+]

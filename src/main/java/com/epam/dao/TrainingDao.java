@@ -1,37 +1,52 @@
 package com.epam.dao;
 
 import com.epam.model.Training;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
-public class TrainingDao extends GenericDao<Training>{
+@Slf4j
+public class TrainingDao {
 
-    public static final String TRAINING = "Training";
+    @PersistenceContext
+    EntityManager entityManager;
 
-    @Override
-    public void save(String namespace, Integer id, Training entity) {
-        super.save(namespace, id, entity);
+
+    public Training save(Training training) {
+        entityManager.persist(training);
+        return training;
     }
 
-    @Override
-    public Training findById(String namespace, Integer id) {
-        return super.findById(namespace, id);
+    public Optional<Training> update(Training updatedEntity) {
+        entityManager.merge(updatedEntity);
+        return Optional.ofNullable(updatedEntity);
     }
 
-    @Override
-    public Map<Integer, Training> findAll(String namespace) {
-        return super.findAll(namespace);
+    public Optional<Training> findById(Integer id) {
+        Training training = entityManager.find(Training.class, id);
+        return Optional.ofNullable(training);
     }
 
-    @Override
-    public void update(String namespace, Integer id, Training updatedEntity) {
-        super.update(namespace, id, updatedEntity);
+    public List<Training> findAll() {
+        Query query = entityManager.createQuery("SELECT t FROM Training t");
+        return query.getResultList();
     }
 
-    @Override
-    public void delete(String namespace, Integer id) {
-        super.delete(namespace, id);
+    public boolean delete(Integer trainingId) {
+        Optional<Training> optionalTraining = findById(trainingId);
+        if (optionalTraining.isPresent()) {
+            entityManager.remove(optionalTraining.get());
+            log.info("Training with ID {} deleted successfully.", trainingId);
+            return true;
+        }
+
+        log.warn("Training with ID {} not found for deletion.", trainingId);
+        return false;
     }
 }
