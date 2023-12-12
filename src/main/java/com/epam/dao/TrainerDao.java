@@ -3,14 +3,14 @@ package com.epam.dao;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
-import jakarta.transaction.Transactional;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -41,10 +41,8 @@ public class TrainerDao {
     }
 
     public Optional<Trainer> findByUsername(String username) {
-        TypedQuery<Trainer> query = entityManager.createQuery("""
-                SELECT tr FROM Trainer tr
-                INNER JOIN User u ON u.id = tr.user.id AND u.username LIKE CONCAT('%', :username, '%')
-                """, Trainer.class).setParameter("username", username);
+        TypedQuery<Trainer> query = entityManager.createQuery("SELECT tr FROM Trainer tr\n" +
+                                                              "INNER JOIN User u ON u.id = tr.user.id AND u.username LIKE CONCAT('%', :username, '%')\n", Trainer.class).setParameter("username", username);
 
         return Optional.ofNullable(query.getSingleResult());
     }

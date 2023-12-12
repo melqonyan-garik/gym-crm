@@ -10,6 +10,7 @@ import com.epam.model.Training;
 import com.epam.model.User;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Mappers {
     public static Trainee convertTraineeJsonDtoToTrainee(TraineeJsonDto traineeJsonDto) {
@@ -30,7 +31,7 @@ public class Mappers {
                     training.setTrainer(trainer);
                     return training;
                 })
-                .toList();
+                .collect(Collectors.toList());
         trainer.setTrainings(trainings);
 
         User user = convertUserJsonDtoToUser(trainerJsonDto.getUser());

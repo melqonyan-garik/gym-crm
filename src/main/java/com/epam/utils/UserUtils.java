@@ -25,6 +25,7 @@ public class UserUtils {
         return password.toString();
     }
     public String generateUsername(User user) {
+        //TODO bad idea to return null
         if (user == null) {
             return null;
         }
