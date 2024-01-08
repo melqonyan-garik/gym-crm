@@ -6,6 +6,7 @@ import com.epam.service.TrainingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,9 +29,7 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     public List<Training> getAllTrainings() {
-        return trainingDao.findAll()
-                .stream()
-                .toList();
+        return new ArrayList<>(trainingDao.findAll());
     }
 
     public boolean deleteTraining(Integer trainingId) {

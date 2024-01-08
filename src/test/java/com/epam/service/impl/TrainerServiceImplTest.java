@@ -1,7 +1,7 @@
 package com.epam.service.impl;
 
 import com.epam.dao.TrainerDao;
-import com.epam.dto.TrainerJsonDto;
+import com.epam.dto.json.TrainerJsonDto;
 import com.epam.mappers.Mappers;
 import com.epam.model.Trainer;
 import com.epam.model.User;

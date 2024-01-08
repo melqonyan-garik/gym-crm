@@ -1,7 +1,7 @@
 package com.epam.service.impl;
 
 import com.epam.dao.TraineeDao;
-import com.epam.dto.TraineeJsonDto;
+import com.epam.dto.json.TraineeJsonDto;
 import com.epam.mappers.Mappers;
 import com.epam.model.Trainee;
 import com.epam.model.User;
@@ -70,8 +70,8 @@ public class TraineeServiceImplTest {
         Assertions.assertEquals(result.getTrainers(), mockedTrainee.getTrainers());
         Assertions.assertEquals(result.getUser().getId(), mockedTrainee.getUser().getId());
         Assertions.assertEquals(result.getUser().getId(), traineeJsonDto.getUser().getId());
-        Assertions.assertEquals(result.getUser().getFirstName(), mockedTrainee.getUser().getFirstName());
-        Assertions.assertEquals(result.getUser().getLastName(), mockedTrainee.getUser().getLastName());
+        Assertions.assertEquals(result.getUser().getFirstname(), mockedTrainee.getUser().getFirstname());
+        Assertions.assertEquals(result.getUser().getLastname(), mockedTrainee.getUser().getLastname());
         Assertions.assertEquals(result.getUser().getPassword(), mockedTrainee.getUser().getPassword());
         Assertions.assertEquals(result.getUser().isActive(), mockedTrainee.getUser().isActive());
 

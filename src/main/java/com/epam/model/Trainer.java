@@ -1,9 +1,9 @@
 package com.epam.model;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
 import java.util.List;
 
 @Getter
@@ -15,7 +15,7 @@ public class Trainer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "specialization")
     private TrainingType specialization;
 

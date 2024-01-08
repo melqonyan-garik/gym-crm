@@ -25,10 +25,7 @@ public class UserUtils {
         return password.toString();
     }
     public String generateUsername(User user) {
-        if (user == null) {
-            return null;
-        }
-        String baseUsername = user.getFirstName() + "." + user.getLastName();
+        String baseUsername = user.getFirstname() + "." + user.getLastname();
         String username = baseUsername;
         Set<String> existingUsernames = userDao.getAllUsernames();
 

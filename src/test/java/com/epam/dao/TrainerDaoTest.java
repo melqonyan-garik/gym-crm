@@ -1,14 +1,14 @@
 package com.epam.dao;
 
-import com.epam.dto.TrainerJsonDto;
+import com.epam.dto.json.TrainerJsonDto;
 import com.epam.mappers.Mappers;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
 import mock.TraineeMockData;
 import mock.TrainerMockData;
 import org.junit.jupiter.api.Assertions;
@@ -135,7 +135,7 @@ public class TrainerDaoTest {
         Trainer trainer = optionalTrainer.get();
 
         Assertions.assertTrue(optionalTrainer.isPresent());
-        Assertions.assertEquals(updatedTrainer.getUser().getFirstName(), trainer.getUser().getFirstName());
+        Assertions.assertEquals(updatedTrainer.getUser().getFirstname(), trainer.getUser().getFirstname());
         Assertions.assertEquals(updatedTrainer.getUser().isActive(), trainer.getUser().isActive());
 
         verify(entityManager, times(1)).merge(any());

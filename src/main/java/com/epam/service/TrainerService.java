@@ -1,6 +1,8 @@
 package com.epam.service;
 
+import com.epam.dto.trainer.TrainerWithTraining;
 import com.epam.model.Trainer;
+import com.epam.model.Training;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,4 +17,8 @@ public interface TrainerService {
     void activateTrainer(Integer trainerId);
     void deactivateTrainer(Integer trainerId);
     boolean areUsernameAndPasswordMatching(String username, String password);
+
+    Optional<Trainer> getTrainerByUsername(String username);
+
+    List<Training> getTrainerTrainingsList(TrainerWithTraining trainerWithTraining);
 }

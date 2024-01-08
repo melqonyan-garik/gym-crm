@@ -1,4 +1,4 @@
-package com.epam.dto;
+package com.epam.dto.json;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
