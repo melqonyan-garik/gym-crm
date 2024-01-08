@@ -31,8 +31,8 @@ public class UserUtilsTest {
     @Test
     void testGenerateUsername() {
         User user = new User();
-        user.setFirstName("john");
-        user.setLastName("doe");
+        user.setFirstname("john");
+        user.setLastname("doe");
 
         when(userDao.getAllUsernames()).thenReturn(Set.of("john.doe", "john.doe1", "john.doe2"));
         String generatedUsername = userUtils.generateUsername(user);

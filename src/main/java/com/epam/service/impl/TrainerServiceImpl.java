@@ -1,7 +1,11 @@
 package com.epam.service.impl;
 
 import com.epam.dao.TrainerDao;
+import com.epam.dto.trainee.TraineeWithTraining;
+import com.epam.dto.trainer.TrainerWithTraining;
+import com.epam.model.Trainee;
 import com.epam.model.Trainer;
+import com.epam.model.Training;
 import com.epam.model.User;
 import com.epam.service.TrainerService;
 import com.epam.utils.UserUtils;
@@ -10,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -164,4 +169,24 @@ public class TrainerServiceImpl implements TrainerService {
             return false;
         }
     }
+
+    @Override
+    public Optional<Trainer> getTrainerByUsername(String username) {
+        Optional<Trainer> optionalTrainer =trainerDao.findByUsername(username);
+        if (optionalTrainer.isPresent()) {
+            Trainer trainer = optionalTrainer.get();
+            boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+            if (areUsernameAndPasswordMatching) {
+                return optionalTrainer;
+            }
+        }
+        return Optional.empty();
+
+    }
+
+    @Override
+    public List<Training> getTrainerTrainingsList(TrainerWithTraining trainerWithTraining) {
+        return trainerDao.getTrainerTrainingsListByCriteria(trainerWithTraining);
+    }
+
 }

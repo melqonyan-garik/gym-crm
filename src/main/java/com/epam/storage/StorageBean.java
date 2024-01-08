@@ -1,7 +1,7 @@
 package com.epam.storage;
 
-import com.epam.dto.TraineeJsonDto;
-import com.epam.dto.TrainerJsonDto;
+import com.epam.dto.json.TraineeJsonDto;
+import com.epam.dto.json.TrainerJsonDto;
 import com.epam.facade.Facade;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.transaction.Transactional;

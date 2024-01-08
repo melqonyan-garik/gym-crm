@@ -1,29 +1,28 @@
 package com.epam.dao;
 
+import com.epam.dto.trainer.TrainerWithTraining;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
+import com.epam.service.GeneralService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 @Transactional
 @Slf4j
-public class TrainerDao {
+public class TrainerDao extends GeneralService {
 
-    @PersistenceContext
-    EntityManager entityManager;
 
     public Trainer save(Trainer trainer) {
         entityManager.persist(trainer);
@@ -41,9 +40,10 @@ public class TrainerDao {
     }
 
     public Optional<Trainer> findByUsername(String username) {
-        TypedQuery<Trainer> query = entityManager.createQuery("SELECT tr FROM Trainer tr\n" +
-                                                              "INNER JOIN User u ON u.id = tr.user.id AND u.username LIKE CONCAT('%', :username, '%')\n", Trainer.class).setParameter("username", username);
-
+        TypedQuery<Trainer> query = entityManager.createQuery("SELECT tr FROM Trainer tr" +
+                                                              " INNER JOIN User u ON u.id = tr.user.id" +
+                                                              " AND u.username LIKE :username", Trainer.class)
+                .setParameter("username", username);
         return Optional.ofNullable(query.getSingleResult());
     }
 
@@ -101,4 +101,20 @@ public class TrainerDao {
         return entityManager.createQuery(cq).getResultList();
     }
 
+    public List<Training> getTrainerTrainingsListByCriteria(TrainerWithTraining trainerWithTraining) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Training> cq = cb.createQuery(Training.class);
+        Root<Training> trainingRoot = cq.from(Training.class);
+        Join<Training, Trainer> trainersJoin = trainingRoot.join("trainer", JoinType.INNER);
+        Join<Training, Trainee> traineeJoin = trainingRoot.join("trainee", JoinType.INNER);
+
+        List<Predicate> predicates = new ArrayList<>();
+        addLikePredicate(trainersJoin.get("user").get("username"), trainerWithTraining.getUsername(), cb, predicates);
+        addLikePredicate(traineeJoin.get("user").get("username"), trainerWithTraining.getTraineeName(), cb, predicates);
+        addGreaterThanOrEqualsPredicate(trainingRoot.get("trainingDate"), trainerWithTraining.getPeriodFrom(), cb, predicates);
+        addLessThanOrEqualsPredicate(trainingRoot.get("trainingDate"), trainerWithTraining.getPeriodTo(), cb, predicates);
+        CriteriaQuery<Training> where = cq.select(trainingRoot).where(predicates.toArray(new Predicate[0]));
+
+        return entityManager.createQuery(where).getResultList();
+    }
 }

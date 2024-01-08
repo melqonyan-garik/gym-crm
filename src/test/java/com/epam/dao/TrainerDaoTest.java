@@ -1,6 +1,6 @@
 package com.epam.dao;
 
-import com.epam.dto.TrainerJsonDto;
+import com.epam.dto.json.TrainerJsonDto;
 import com.epam.mappers.Mappers;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
@@ -135,7 +135,7 @@ public class TrainerDaoTest {
         Trainer trainer = optionalTrainer.get();
 
         Assertions.assertTrue(optionalTrainer.isPresent());
-        Assertions.assertEquals(updatedTrainer.getUser().getFirstName(), trainer.getUser().getFirstName());
+        Assertions.assertEquals(updatedTrainer.getUser().getFirstname(), trainer.getUser().getFirstname());
         Assertions.assertEquals(updatedTrainer.getUser().isActive(), trainer.getUser().isActive());
 
         verify(entityManager, times(1)).merge(any());

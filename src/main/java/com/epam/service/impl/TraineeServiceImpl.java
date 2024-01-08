@@ -1,7 +1,10 @@
 package com.epam.service.impl;
 
 import com.epam.dao.TraineeDao;
+import com.epam.dto.trainee.TraineeWithTraining;
 import com.epam.model.Trainee;
+import com.epam.model.Trainer;
+import com.epam.model.Training;
 import com.epam.model.User;
 import com.epam.service.TraineeService;
 import com.epam.utils.UserUtils;
@@ -10,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,7 +27,6 @@ public class TraineeServiceImpl implements TraineeService {
     private TraineeDao traineeDao;
     @Autowired
     private UserUtils userUtils;
-
 
     public Trainee createTrainee(Trainee trainee) {
         try {
@@ -46,8 +50,8 @@ public class TraineeServiceImpl implements TraineeService {
     public Optional<Trainee> updateTrainee(Trainee trainee) {
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainee update failed because username: {} and password: {} do not match.", trainee.getUser().getUsername(), trainee.getUser().getPassword());
-            return Optional.empty();
+            log.warn("Trainee update failed because username: {} and password: {} do not match.", trainee.getUser().getUsername(), trainee.getUser().getPassword());
+            return Optional.empty();//TODO throw an exception
         }
 
         Optional<Trainee> optionalTrainee = traineeDao.update(trainee);
@@ -139,6 +143,7 @@ public class TraineeServiceImpl implements TraineeService {
         return false;
     }
 
+    @Transactional
     public void activateTrainee(Integer traineeId) {
         Optional<Trainee> optionalTrainee = traineeDao.findById(traineeId);
         if (optionalTrainee.isEmpty()) {
@@ -156,11 +161,12 @@ public class TraineeServiceImpl implements TraineeService {
         }
 
         user.setActive(true);
+        trainee.setUser(user);
         traineeDao.update(trainee);
         log.info("Trainee with ID {}, activated successfully.", traineeId);
 
     }
-
+    @Transactional
     public void deactivateTrainee(Integer traineeId) {
         Optional<Trainee> optionalTrainee = traineeDao.findById(traineeId);
         if (optionalTrainee.isEmpty()) {
@@ -178,6 +184,7 @@ public class TraineeServiceImpl implements TraineeService {
         }
 
         user.setActive(false);
+        trainee.setUser(user);
         traineeDao.update(trainee);
         log.info("Trainee with ID {}, deactivated successfully.", traineeId);
 
@@ -195,5 +202,26 @@ public class TraineeServiceImpl implements TraineeService {
         }
 
     }
+
+    @Override
+    public List<Trainer> getTrainersByTraineeId(Integer id) {
+        Optional<Trainee> optionalTrainee = getTraineeById(id);
+        if (optionalTrainee.isPresent()) {
+            Trainee trainee = optionalTrainee.get();
+            return trainee.getTrainers();
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<Trainer> getNotAssignedTrainers(String username) {
+        return traineeDao.getNotAssignedTrainers(username);
+    }
+
+    @Override
+    public List<Training> getTraineeTrainingsList(TraineeWithTraining traineeWithTraining) {
+        return traineeDao.getTraineeTrainingsListByCriteria(traineeWithTraining);
+    }
+
 }
 

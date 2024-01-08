@@ -1,6 +1,6 @@
 package mock;
 
-import com.epam.dto.TrainingJsonDto;
+import com.epam.dto.json.TrainingJsonDto;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;

@@ -1,4 +1,4 @@
-package com.epam.dto;
+package com.epam.dto.trainee;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

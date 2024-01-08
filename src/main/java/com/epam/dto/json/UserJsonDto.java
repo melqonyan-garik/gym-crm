@@ -1,4 +1,4 @@
-package com.epam.dto;
+package com.epam.dto.json;
 
 import lombok.Data;
 

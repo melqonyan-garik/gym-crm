@@ -28,4 +28,9 @@ public class TrainingType {
     @OneToMany(mappedBy = "trainingType")
     private List<Training> trainings;
 
+
+    public TrainingType(String specialization, List<Trainer> trainers) {
+        this.trainingTypeName = specialization;
+        this.trainers = trainers;
+    }
 }

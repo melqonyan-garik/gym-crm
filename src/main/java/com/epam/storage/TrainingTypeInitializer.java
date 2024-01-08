@@ -16,8 +16,5 @@ public class TrainingTypeInitializer {
         entityManager.createNativeQuery("INSERT INTO training_type (training_type_name) " +
                         "VALUES ('Technical'), ('Soft Skills'), ('Leadership')")
                 .executeUpdate();
-
-
-
     }
 }
