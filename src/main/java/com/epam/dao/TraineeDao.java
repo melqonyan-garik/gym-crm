@@ -22,9 +22,6 @@ import java.util.Optional;
 @Slf4j
 public class TraineeDao extends GeneralService {
 
-    @Autowired
-    private TrainerDao trainerDao;
-
     public Trainee save(Trainee trainee) {
         entityManager.persist(trainee);
         return trainee;

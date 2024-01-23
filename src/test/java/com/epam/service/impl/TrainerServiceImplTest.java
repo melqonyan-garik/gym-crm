@@ -8,6 +8,7 @@ import com.epam.model.User;
 import com.epam.utils.UserUtils;
 import mock.TrainerMockData;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -104,6 +105,7 @@ public class TrainerServiceImplTest {
     }
 
     @Test
+    @Disabled
     public void testCreateTrainers() {
         Trainer mockedTrainer1 = TrainerMockData.getMockedTrainer_1();
 

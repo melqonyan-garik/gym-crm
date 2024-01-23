@@ -3,6 +3,7 @@ package com.epam.service.impl;
 import com.epam.dao.TrainerDao;
 import com.epam.dto.trainee.TraineeWithTraining;
 import com.epam.dto.trainer.TrainerWithTraining;
+import com.epam.exceptions.WrongPasswordException;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
@@ -31,7 +32,7 @@ public class TrainerServiceImpl implements TrainerService {
 
     public Trainer createTrainer(Trainer trainer) {
         try {
-            String username = userUtils.generateUsername(trainer.getUser());
+            String username = userUtils.generateUsername(trainer.getUser().getFirstname(), trainer.getUser().getLastname());
             String password = UserUtils.generateRandomPassword();
             if (trainer.getUser() != null) {
                 trainer.getUser().setUsername(username);
@@ -51,8 +52,7 @@ public class TrainerServiceImpl implements TrainerService {
     public Optional<Trainer> updateTrainer(Trainer trainer) {
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainer update failed because username: {} and password: {} do not match.", trainer.getUser().getUsername(), trainer.getUser().getPassword());
-            return Optional.empty();
+            throw new WrongPasswordException("Password don't match");
         }
 
         Optional<Trainer> optionalTrainer = trainerDao.update(trainer);
@@ -73,8 +73,7 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = optionalTrainer.get();
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainer update failed because username: {} and password: {} do not match.", trainer.getUser().getUsername(), trainer.getUser().getPassword());
-            return Optional.empty();
+            throw new WrongPasswordException("Password don't match");
         }
         return optionalTrainer;
     }
@@ -93,8 +92,7 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = optionalTrainer.get();
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainer deletion failed because username: {} and password: {} do not match for trainer id :{}",
-                    trainer.getUser().getUsername(), trainer.getUser().getPassword(), trainerId);
+            throw new WrongPasswordException("Password don't match");
         }
         return trainerDao.delete(trainerId);
 
@@ -128,8 +126,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.warn("Username and password do not match for trainer with ID {}. Activation aborted.", trainerId);
-            return;
+            throw new WrongPasswordException("Password don't match");
         }
 
         user.setActive(true);
@@ -149,8 +146,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.warn("Username and password do not match for trainer with ID {}. Deactivation aborted.", trainerId);
-            return;
+            throw new WrongPasswordException("Password don't match");
         }
 
         user.setActive(false);
@@ -172,12 +168,14 @@ public class TrainerServiceImpl implements TrainerService {
 
     @Override
     public Optional<Trainer> getTrainerByUsername(String username) {
-        Optional<Trainer> optionalTrainer =trainerDao.findByUsername(username);
+        Optional<Trainer> optionalTrainer = trainerDao.findByUsername(username);
         if (optionalTrainer.isPresent()) {
             Trainer trainer = optionalTrainer.get();
             boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
             if (areUsernameAndPasswordMatching) {
                 return optionalTrainer;
+            } else {
+                throw new WrongPasswordException("Password don't match");
             }
         }
         return Optional.empty();

@@ -2,26 +2,34 @@ package com.epam.controller;
 
 import com.epam.dto.trainee.*;
 import com.epam.dto.trainer.TrainerProfile;
+import com.epam.exceptions.OperationFailureException;
 import com.epam.mappers.TraineeMapper;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
 import com.epam.service.TraineeService;
 import com.epam.service.TrainerService;
-
+import com.epam.utils.UserUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/trainee")
 @RequiredArgsConstructor
+@Slf4j
 public class TraineeController {
     private final TraineeMapper mapper;
     private final TraineeService traineeService;
@@ -29,6 +37,12 @@ public class TraineeController {
 
     @PostMapping
     public ResponseEntity<TraineeRegistrationResponse> registerTrainee(@RequestBody @Valid TraineeRegistrationRequest request) {
+        String username = UserUtils.getBaseUsername(request.getFirstname(), request.getLastname());
+        Optional<Trainer> trainerOptional = trainerService.getTrainerByUsername(username);
+        if (trainerOptional.isPresent()) {
+            ResponseEntity.badRequest().body("Not possible to register as a trainer and trainee both");
+        }
+
         Trainee trainee = mapper.traineeRegistrationRequestToTrainee(request);
         Trainee createdTrainee = traineeService.createTrainee(trainee);
         TraineeRegistrationResponse response = new TraineeRegistrationResponse(
@@ -68,12 +82,18 @@ public class TraineeController {
 
     @DeleteMapping
     public ResponseEntity<String> deleteTraineeProfile(@RequestParam String username) {
-        boolean deleted = traineeService.deleteTraineeByUsername(username);
-        if (deleted) {
-            return ResponseEntity.ok("Trainee profile deleted successfully. Status: 200 OK");
-        }
-        return ResponseEntity.badRequest().build();// change this
+        try {
+            boolean deleted = traineeService.deleteTraineeByUsername(username);
 
+            if (deleted) {
+                return ResponseEntity.ok("Trainee profile deleted successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee not found");
+            }
+        } catch (DataAccessException ex) {
+            log.error("Error deleting trainee profile", ex);
+            throw new OperationFailureException("Error deleting trainee profile. Please try again later.");
+        }
     }
 
     @GetMapping("get-not-assigned-trainers")

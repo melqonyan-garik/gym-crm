@@ -2,6 +2,7 @@ package com.epam.service.impl;
 
 import com.epam.dao.TraineeDao;
 import com.epam.dto.trainee.TraineeWithTraining;
+import com.epam.exceptions.WrongPasswordException;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -30,7 +30,7 @@ public class TraineeServiceImpl implements TraineeService {
 
     public Trainee createTrainee(Trainee trainee) {
         try {
-            String username = userUtils.generateUsername(trainee.getUser());
+            String username = userUtils.generateUsername(trainee.getUser().getFirstname(), trainee.getUser().getLastname());
             String password = UserUtils.generateRandomPassword();
             if (trainee.getUser() != null) {
                 trainee.getUser().setUsername(username);
@@ -50,8 +50,7 @@ public class TraineeServiceImpl implements TraineeService {
     public Optional<Trainee> updateTrainee(Trainee trainee) {
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.warn("Trainee update failed because username: {} and password: {} do not match.", trainee.getUser().getUsername(), trainee.getUser().getPassword());
-            return Optional.empty();//TODO throw an exception
+            throw new WrongPasswordException("Password don't match");
         }
 
         Optional<Trainee> optionalTrainee = traineeDao.update(trainee);
@@ -73,8 +72,7 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee trainee = optionalTrainee.get();
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainee update failed because username: {} and password: {} do not match.", trainee.getUser().getUsername(), trainee.getUser().getPassword());
-            return Optional.empty();
+            throw new WrongPasswordException("Password don't match");
         }
         return optionalTrainee;
     }
@@ -86,6 +84,8 @@ public class TraineeServiceImpl implements TraineeService {
             boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
             if (areUsernameAndPasswordMatching) {
                 return optionalTrainee;
+            } else {
+                throw new WrongPasswordException("Password don't match");
             }
         }
         return Optional.empty();
@@ -104,8 +104,7 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee trainee = optionalTrainee.get();
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainee deletion failed because username: {} and password: {} do not match for trainee id :{}",
-                    trainee.getUser().getUsername(), trainee.getUser().getPassword(), traineeId);
+            throw new WrongPasswordException("Password don't match");
         }
 
         return traineeDao.delete(traineeId);
@@ -121,7 +120,7 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee trainee = optionalTrainee.get();
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainee deletion with username failed because username: {} and password: {} do not match.", trainee.getUser().getUsername(), trainee.getUser().getPassword());
+            throw new WrongPasswordException("Password don't match");
         }
         return traineeDao.deleteByUsername(username);
 
@@ -156,8 +155,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.warn("Username and password do not match for trainee with ID {}. Activation aborted.", traineeId);
-            return;
+            throw new WrongPasswordException("Password don't match");
         }
 
         user.setActive(true);
@@ -166,6 +164,7 @@ public class TraineeServiceImpl implements TraineeService {
         log.info("Trainee with ID {}, activated successfully.", traineeId);
 
     }
+
     @Transactional
     public void deactivateTrainee(Integer traineeId) {
         Optional<Trainee> optionalTrainee = traineeDao.findById(traineeId);
@@ -179,8 +178,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.warn("Username and password do not match for trainee with ID {}. Deactivation aborted.", traineeId);
-            return;
+            throw new WrongPasswordException("Password don't match");
         }
 
         user.setActive(false);

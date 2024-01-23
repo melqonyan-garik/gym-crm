@@ -1,7 +1,10 @@
 package com.epam.controller;
 
 import com.epam.dao.UserDao;
+import com.epam.exceptions.InvalidPasswordException;
+import com.epam.exceptions.WrongPasswordException;
 import com.epam.model.User;
+import com.epam.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,14 +43,18 @@ public class LoginController {
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (user.getPassword().equals(oldPassword)) {
-                user.setPassword(newPassword);
-                Optional<User> updateUser = userDao.update(user);
-                if (updateUser.isPresent()) {
-                    return ResponseEntity.ok("Password changed successfully. Status: 200 OK");
+                if (UserUtils.isValidPassword(newPassword)) {
+                    user.setPassword(newPassword);
+                    userDao.update(user);
+                } else {
+                    throw new InvalidPasswordException("Invalid password criteria. Please choose a stronger password.");
                 }
+            } else {
+                throw new WrongPasswordException("Old password is incorrect");
             }
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials. Status: 401 Unauthorized");
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
 
     }
 }

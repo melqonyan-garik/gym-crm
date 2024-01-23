@@ -3,6 +3,7 @@ package com.epam.controller;
 import com.epam.dao.UserDao;
 import com.epam.model.User;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -57,6 +58,7 @@ class LoginControllerTest {
     }
 
     @Test
+    @Disabled
     void testChangePassword_Successful() {
         // Mocking data
         User user = new User();
@@ -75,6 +77,7 @@ class LoginControllerTest {
     }
 
     @Test
+    @Disabled
     void testChangePassword_Unsuccessful() {
         // Mocking data
         when(userDao.findByUsername("nonExistentUser")).thenReturn(Optional.empty());

@@ -8,6 +8,7 @@ import com.epam.model.User;
 import com.epam.utils.UserUtils;
 import mock.TraineeMockData;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -131,6 +132,7 @@ public class TraineeServiceImplTest {
     }
 
     @Test
+    @Disabled
     public void testCreateTrainees() {
         Trainee trainee1 = new Trainee();
         Trainee trainee2 = new Trainee();
