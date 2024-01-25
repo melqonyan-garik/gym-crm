@@ -16,11 +16,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @Transactional
 @Slf4j
 public class TraineeDao extends GeneralService {
+    @Autowired
+    private TrainerDao trainerDao;
 
     public Trainee save(Trainee trainee) {
         entityManager.persist(trainee);
@@ -102,16 +105,15 @@ public class TraineeDao extends GeneralService {
     }
 
     public List<Trainer> getNotAssignedTrainers(String username) {
-//        Optional<Trainee> optionalTrainee = findByUsername(username);
-//        if (optionalTrainee.isPresent()) {
-//            Trainee trainee = optionalTrainee.get();
-//            List<Trainer> assignedTrainers = trainee.getTrainers();
-//            List<Trainer> allTrainers = trainerDao.findAll();
-//            return allTrainers.stream()
-//                    .filter(trainer -> !assignedTrainers.contains(trainer))
-//                    .collect(Collectors.toList());
-//
-//        }
+        Optional<Trainee> optionalTrainee = findByUsername(username);
+        if (optionalTrainee.isPresent()) {
+            Trainee trainee = optionalTrainee.get();
+            List<Trainer> assignedTrainers = trainee.getTrainers();
+            List<Trainer> allTrainers = trainerDao.findAll();
+            return allTrainers.stream()
+                    .filter(trainer -> !assignedTrainers.contains(trainer))
+                    .collect(Collectors.toList());
+        }
         return Collections.emptyList();
     }
 

@@ -6,6 +6,7 @@ import com.epam.dto.trainer.TrainerProfile;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
+import com.epam.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -47,4 +48,6 @@ public interface TraineeMapper {
     TraineeTrainingResponse trainingToTraineeTrainingResponse(Training trainings);
 
     List<TraineeTrainingResponse> trainingsToTraineeTrainingResponse(List<Training> trainings);
+
+    TraineeRegistrationResponse traineeToTraineeRegistrationResponse(User user);
 }

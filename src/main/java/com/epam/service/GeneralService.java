@@ -2,6 +2,7 @@ package com.epam.service;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;

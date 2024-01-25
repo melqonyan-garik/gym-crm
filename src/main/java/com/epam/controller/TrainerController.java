@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +47,6 @@ public class TrainerController {
     }
 
     @GetMapping
-    @Transactional
     public ResponseEntity<TrainerProfileResponse> getTrainerProfile(@RequestParam String username) {
         Optional<Trainer> trainerOptional = trainerService.getTrainerByUsername(username);
         if (trainerOptional.isEmpty()) {
@@ -76,21 +74,22 @@ public class TrainerController {
     }
 
     @GetMapping("/trainings")
-    @Transactional
     public ResponseEntity<List<TrainerTrainingResponse>> getTrainerTrainings(@Valid TrainerWithTraining trainerWithTraining) {
         List<Training> trainings = trainerService.getTrainerTrainingsList(trainerWithTraining);
 
         return ResponseEntity.ok(mapper.trainingsToTrainerTrainingsResponse(trainings));
     }
 
-    @PatchMapping("activate-deactivate")
-    ResponseEntity<String> activateDeactivateTrainee(String username, boolean isActive) {
+    @PatchMapping("/activate")
+    ResponseEntity<String> activateTrainee(String username) {
         Trainer trainer = trainerService.getTrainerByUsername(username).orElseThrow();
+        trainerService.activateTrainer(trainer.getId());
+        return ResponseEntity.ok().build();
+    }
 
-        if (isActive) {
-            trainerService.activateTrainer(trainer.getId());
-            return ResponseEntity.ok().build();
-        }
+    @PatchMapping("/deactivate")
+    ResponseEntity<String> deactivateTrainer(String username) {
+        Trainer trainer = trainerService.getTrainerByUsername(username).orElseThrow();
         trainerService.deactivateTrainer(trainer.getId());
         return ResponseEntity.ok().build();
     }

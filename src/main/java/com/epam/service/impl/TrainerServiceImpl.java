@@ -1,10 +1,8 @@
 package com.epam.service.impl;
 
 import com.epam.dao.TrainerDao;
-import com.epam.dto.trainee.TraineeWithTraining;
 import com.epam.dto.trainer.TrainerWithTraining;
 import com.epam.exceptions.WrongPasswordException;
-import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
 import com.epam.model.User;
@@ -15,11 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j

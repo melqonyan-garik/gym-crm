@@ -1,13 +1,10 @@
 package com.epam.dao;
 
-import com.epam.model.Trainee;
-import com.epam.model.Trainer;
 import com.epam.model.User;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.Set;

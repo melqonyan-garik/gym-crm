@@ -24,14 +24,14 @@ public class Trainee {
     @Column(name = "address")
     private String address;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToMany(mappedBy = "trainees")
+    @ManyToMany(mappedBy = "trainees", fetch = FetchType.EAGER)
     private List<Trainer> trainers;
 
-    @OneToMany(mappedBy = "trainee",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "trainee", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Training> trainings;
 
 }

@@ -1,7 +1,10 @@
 package com.epam.mappers;
 
 import com.epam.config.MapStructGlobalConfig;
-import com.epam.dto.trainer.*;
+import com.epam.dto.trainer.TrainerProfileResponse;
+import com.epam.dto.trainer.TrainerTrainingResponse;
+import com.epam.dto.trainer.TrainerUpdateRequestDto;
+import com.epam.dto.trainer.TrainerUpdateResponseDto;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
 import org.mapstruct.Mapper;

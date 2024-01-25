@@ -2,6 +2,7 @@ package com.epam.service.impl;
 
 import com.epam.dao.TraineeDao;
 import com.epam.dto.trainee.TraineeWithTraining;
+import com.epam.exceptions.OperationFailureException;
 import com.epam.exceptions.WrongPasswordException;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
@@ -11,6 +12,7 @@ import com.epam.service.TraineeService;
 import com.epam.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -112,17 +114,23 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     public boolean deleteTraineeByUsername(String username) {
-        Optional<Trainee> optionalTrainee = traineeDao.findByUsername(username);
-        if (optionalTrainee.isEmpty()) {
-            log.warn("Trainee with username {} not found. Deletion aborted.", username);
-            return false;
+
+        try {
+            Optional<Trainee> optionalTrainee = traineeDao.findByUsername(username);
+            if (optionalTrainee.isEmpty()) {
+                log.warn("Trainee with username {} not found. Deletion aborted.", username);
+                return false;
+            }
+            Trainee trainee = optionalTrainee.get();
+            boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+            if (!areUsernameAndPasswordMatching) {
+                throw new WrongPasswordException("Password don't match");
+            }
+            return traineeDao.deleteByUsername(username);
+        } catch (DataAccessException ex) {
+            log.error("Error deleting trainee profile", ex);
+            throw new OperationFailureException("Error deleting trainee profile. Please try again later.");
         }
-        Trainee trainee = optionalTrainee.get();
-        boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
-        if (!areUsernameAndPasswordMatching) {
-            throw new WrongPasswordException("Password don't match");
-        }
-        return traineeDao.deleteByUsername(username);
 
     }
 
