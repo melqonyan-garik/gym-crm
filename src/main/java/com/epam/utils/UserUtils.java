@@ -23,7 +23,7 @@ public class UserUtils {
             password.append(characters.charAt(index));
         }
         String finalPassword = password.toString();
-        if (isValidPassword(finalPassword)){
+        if (!isValidPassword(finalPassword)){
             throw new InvalidPasswordException("Invalid password criteria. Please choose a stronger password.");
         }
         return finalPassword;
@@ -49,7 +49,7 @@ public class UserUtils {
     }
     public static boolean isValidPassword(String password) {
         // Add your password criteria checks here
-        return password.length() >= 8 && password.matches(".*[A-Z].*") && password.matches(".*[a-z].*") && password.matches(".*\\d.*");
+        return password.length() >= 6 && password.matches(".*[A-Z].*") && password.matches(".*[a-z].*");
     }
 
 }
