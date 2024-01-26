@@ -1,15 +1,24 @@
 package com.epam.service.impl;
 
 import com.epam.dao.TraineeDao;
+import com.epam.dto.trainee.TraineeWithTraining;
+import com.epam.exceptions.OperationFailureException;
+import com.epam.exceptions.WrongPasswordException;
 import com.epam.model.Trainee;
+import com.epam.model.Trainer;
+import com.epam.model.Training;
 import com.epam.model.User;
 import com.epam.service.TraineeService;
 import com.epam.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,10 +30,9 @@ public class TraineeServiceImpl implements TraineeService {
     @Autowired
     private UserUtils userUtils;
 
-
     public Trainee createTrainee(Trainee trainee) {
         try {
-            String username = userUtils.generateUsername(trainee.getUser());
+            String username = userUtils.generateUsername(trainee.getUser().getFirstname(), trainee.getUser().getLastname());
             String password = UserUtils.generateRandomPassword();
             if (trainee.getUser() != null) {
                 trainee.getUser().setUsername(username);
@@ -44,8 +52,7 @@ public class TraineeServiceImpl implements TraineeService {
     public Optional<Trainee> updateTrainee(Trainee trainee) {
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainee update failed because username: {} and password: {} do not match.", trainee.getUser().getUsername(), trainee.getUser().getPassword());
-            return Optional.empty();
+            throw new WrongPasswordException("Password don't match");
         }
 
         Optional<Trainee> optionalTrainee = traineeDao.update(trainee);
@@ -67,8 +74,7 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee trainee = optionalTrainee.get();
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainee update failed because username: {} and password: {} do not match.", trainee.getUser().getUsername(), trainee.getUser().getPassword());
-            return Optional.empty();
+            throw new WrongPasswordException("Password don't match");
         }
         return optionalTrainee;
     }
@@ -80,15 +86,15 @@ public class TraineeServiceImpl implements TraineeService {
             boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
             if (areUsernameAndPasswordMatching) {
                 return optionalTrainee;
+            } else {
+                throw new WrongPasswordException("Password don't match");
             }
         }
         return Optional.empty();
     }
 
     public List<Trainee> getAllTrainees() {
-        return traineeDao.findAll()
-                .stream()
-                .toList();
+        return new ArrayList<>(traineeDao.findAll());
     }
 
     public boolean deleteTrainee(Integer traineeId) {
@@ -100,8 +106,7 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee trainee = optionalTrainee.get();
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainee deletion failed because username: {} and password: {} do not match for trainee id :{}",
-                    trainee.getUser().getUsername(), trainee.getUser().getPassword(), traineeId);
+            throw new WrongPasswordException("Password don't match");
         }
 
         return traineeDao.delete(traineeId);
@@ -109,17 +114,23 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     public boolean deleteTraineeByUsername(String username) {
-        Optional<Trainee> optionalTrainee = traineeDao.findByUsername(username);
-        if (optionalTrainee.isEmpty()) {
-            log.warn("Trainee with username {} not found. Deletion aborted.", username);
-            return false;
+
+        try {
+            Optional<Trainee> optionalTrainee = traineeDao.findByUsername(username);
+            if (optionalTrainee.isEmpty()) {
+                log.warn("Trainee with username {} not found. Deletion aborted.", username);
+                return false;
+            }
+            Trainee trainee = optionalTrainee.get();
+            boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
+            if (!areUsernameAndPasswordMatching) {
+                throw new WrongPasswordException("Password don't match");
+            }
+            return traineeDao.deleteByUsername(username);
+        } catch (DataAccessException ex) {
+            log.error("Error deleting trainee profile", ex);
+            throw new OperationFailureException("Error deleting trainee profile. Please try again later.");
         }
-        Trainee trainee = optionalTrainee.get();
-        boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainee.getUser().getUsername(), trainee.getUser().getPassword());
-        if (!areUsernameAndPasswordMatching) {
-            log.info("Trainee deletion with username failed because username: {} and password: {} do not match.", trainee.getUser().getUsername(), trainee.getUser().getPassword());
-        }
-        return traineeDao.deleteByUsername(username);
 
     }
 
@@ -139,6 +150,7 @@ public class TraineeServiceImpl implements TraineeService {
         return false;
     }
 
+    @Transactional
     public void activateTrainee(Integer traineeId) {
         Optional<Trainee> optionalTrainee = traineeDao.findById(traineeId);
         if (optionalTrainee.isEmpty()) {
@@ -151,16 +163,17 @@ public class TraineeServiceImpl implements TraineeService {
 
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.warn("Username and password do not match for trainee with ID {}. Activation aborted.", traineeId);
-            return;
+            throw new WrongPasswordException("Password don't match");
         }
 
         user.setActive(true);
+        trainee.setUser(user);
         traineeDao.update(trainee);
         log.info("Trainee with ID {}, activated successfully.", traineeId);
 
     }
 
+    @Transactional
     public void deactivateTrainee(Integer traineeId) {
         Optional<Trainee> optionalTrainee = traineeDao.findById(traineeId);
         if (optionalTrainee.isEmpty()) {
@@ -173,11 +186,11 @@ public class TraineeServiceImpl implements TraineeService {
 
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.warn("Username and password do not match for trainee with ID {}. Deactivation aborted.", traineeId);
-            return;
+            throw new WrongPasswordException("Password don't match");
         }
 
         user.setActive(false);
+        trainee.setUser(user);
         traineeDao.update(trainee);
         log.info("Trainee with ID {}, deactivated successfully.", traineeId);
 
@@ -195,5 +208,26 @@ public class TraineeServiceImpl implements TraineeService {
         }
 
     }
+
+    @Override
+    public List<Trainer> getTrainersByTraineeId(Integer id) {
+        Optional<Trainee> optionalTrainee = getTraineeById(id);
+        if (optionalTrainee.isPresent()) {
+            Trainee trainee = optionalTrainee.get();
+            return trainee.getTrainers();
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<Trainer> getNotAssignedTrainers(String username) {
+        return traineeDao.getNotAssignedTrainers(username);
+    }
+
+    @Override
+    public List<Training> getTraineeTrainingsList(TraineeWithTraining traineeWithTraining) {
+        return traineeDao.getTraineeTrainingsListByCriteria(traineeWithTraining);
+    }
+
 }
 

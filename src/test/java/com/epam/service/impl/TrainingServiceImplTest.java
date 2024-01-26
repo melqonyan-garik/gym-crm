@@ -1,7 +1,7 @@
 package com.epam.service.impl;
 
 import com.epam.dao.TrainingDao;
-import com.epam.dto.TrainingJsonDto;
+import com.epam.dto.json.TrainingJsonDto;
 import com.epam.mappers.Mappers;
 import com.epam.model.Training;
 import mock.TrainingMockData;

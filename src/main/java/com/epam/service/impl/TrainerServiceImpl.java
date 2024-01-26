@@ -1,7 +1,10 @@
 package com.epam.service.impl;
 
 import com.epam.dao.TrainerDao;
+import com.epam.dto.trainer.TrainerWithTraining;
+import com.epam.exceptions.WrongPasswordException;
 import com.epam.model.Trainer;
+import com.epam.model.Training;
 import com.epam.model.User;
 import com.epam.service.TrainerService;
 import com.epam.utils.UserUtils;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +28,7 @@ public class TrainerServiceImpl implements TrainerService {
 
     public Trainer createTrainer(Trainer trainer) {
         try {
-            String username = userUtils.generateUsername(trainer.getUser());
+            String username = userUtils.generateUsername(trainer.getUser().getFirstname(), trainer.getUser().getLastname());
             String password = UserUtils.generateRandomPassword();
             if (trainer.getUser() != null) {
                 trainer.getUser().setUsername(username);
@@ -44,8 +48,7 @@ public class TrainerServiceImpl implements TrainerService {
     public Optional<Trainer> updateTrainer(Trainer trainer) {
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainer update failed because username: {} and password: {} do not match.", trainer.getUser().getUsername(), trainer.getUser().getPassword());
-            return Optional.empty();
+            throw new WrongPasswordException("Password don't match");
         }
 
         Optional<Trainer> optionalTrainer = trainerDao.update(trainer);
@@ -66,16 +69,13 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = optionalTrainer.get();
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainer update failed because username: {} and password: {} do not match.", trainer.getUser().getUsername(), trainer.getUser().getPassword());
-            return Optional.empty();
+            throw new WrongPasswordException("Password don't match");
         }
         return optionalTrainer;
     }
 
     public List<Trainer> getAllTrainer() {
-        return trainerDao.findAll()
-                .stream()
-                .toList();
+        return new ArrayList<>(trainerDao.findAll());
     }
 
     public boolean deleteTrainer(Integer trainerId) {
@@ -88,8 +88,7 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = optionalTrainer.get();
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.info("Trainer deletion failed because username: {} and password: {} do not match for trainer id :{}",
-                    trainer.getUser().getUsername(), trainer.getUser().getPassword(), trainerId);
+            throw new WrongPasswordException("Password don't match");
         }
         return trainerDao.delete(trainerId);
 
@@ -123,8 +122,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.warn("Username and password do not match for trainer with ID {}. Activation aborted.", trainerId);
-            return;
+            throw new WrongPasswordException("Password don't match");
         }
 
         user.setActive(true);
@@ -144,8 +142,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(user.getUsername(), user.getPassword());
         if (!areUsernameAndPasswordMatching) {
-            log.warn("Username and password do not match for trainer with ID {}. Deactivation aborted.", trainerId);
-            return;
+            throw new WrongPasswordException("Password don't match");
         }
 
         user.setActive(false);
@@ -164,4 +161,26 @@ public class TrainerServiceImpl implements TrainerService {
             return false;
         }
     }
+
+    @Override
+    public Optional<Trainer> getTrainerByUsername(String username) {
+        Optional<Trainer> optionalTrainer = trainerDao.findByUsername(username);
+        if (optionalTrainer.isPresent()) {
+            Trainer trainer = optionalTrainer.get();
+            boolean areUsernameAndPasswordMatching = areUsernameAndPasswordMatching(trainer.getUser().getUsername(), trainer.getUser().getPassword());
+            if (areUsernameAndPasswordMatching) {
+                return optionalTrainer;
+            } else {
+                throw new WrongPasswordException("Password don't match");
+            }
+        }
+        return Optional.empty();
+
+    }
+
+    @Override
+    public List<Training> getTrainerTrainingsList(TrainerWithTraining trainerWithTraining) {
+        return trainerDao.getTrainerTrainingsListByCriteria(trainerWithTraining);
+    }
+
 }

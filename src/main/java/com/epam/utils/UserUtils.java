@@ -1,7 +1,7 @@
 package com.epam.utils;
 
 import com.epam.dao.UserDao;
-import com.epam.model.User;
+import com.epam.exceptions.InvalidPasswordException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,13 +22,15 @@ public class UserUtils {
             int index = random.nextInt(characters.length());
             password.append(characters.charAt(index));
         }
-        return password.toString();
-    }
-    public String generateUsername(User user) {
-        if (user == null) {
-            return null;
+        String finalPassword = password.toString();
+        if (!isValidPassword(finalPassword)){
+            throw new InvalidPasswordException("Invalid password criteria. Please choose a stronger password.");
         }
-        String baseUsername = user.getFirstName() + "." + user.getLastName();
+        return finalPassword;
+    }
+
+    public String generateUsername(String firstname, String lastname) {
+        String baseUsername = getBaseUsername(firstname, lastname);
         String username = baseUsername;
         Set<String> existingUsernames = userDao.getAllUsernames();
 
@@ -41,4 +43,13 @@ public class UserUtils {
 
         return username;
     }
+
+    public static String getBaseUsername(String firstname, String lastname) {
+        return firstname + "." + lastname;
+    }
+    public static boolean isValidPassword(String password) {
+        // Add your password criteria checks here
+        return password.length() >= 6 && password.matches(".*[A-Z].*") && password.matches(".*[a-z].*");
+    }
+
 }

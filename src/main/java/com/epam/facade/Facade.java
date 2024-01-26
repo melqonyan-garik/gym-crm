@@ -1,7 +1,7 @@
 package com.epam.facade;
 
-import com.epam.dto.TraineeJsonDto;
-import com.epam.dto.TrainerJsonDto;
+import com.epam.dto.json.TraineeJsonDto;
+import com.epam.dto.json.TrainerJsonDto;
 import com.epam.mappers.Mappers;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;

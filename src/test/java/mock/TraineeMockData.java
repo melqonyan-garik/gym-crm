@@ -1,6 +1,6 @@
 package mock;
 
-import com.epam.dto.TraineeJsonDto;
+import com.epam.dto.json.TraineeJsonDto;
 import com.epam.model.Trainee;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

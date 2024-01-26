@@ -1,11 +1,11 @@
 package com.epam.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
 
+import javax.persistence.*;
 import java.util.List;
 
 @Getter
@@ -28,4 +28,9 @@ public class TrainingType {
     @OneToMany(mappedBy = "trainingType")
     private List<Training> trainings;
 
+
+    public TrainingType(String specialization, List<Trainer> trainers) {
+        this.trainingTypeName = specialization;
+        this.trainers = trainers;
+    }
 }

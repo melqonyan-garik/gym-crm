@@ -1,16 +1,16 @@
 package com.epam.storage;
 
-import com.epam.dto.TraineeJsonDto;
-import com.epam.dto.TrainerJsonDto;
+import com.epam.dto.json.TraineeJsonDto;
+import com.epam.dto.json.TrainerJsonDto;
 import com.epam.facade.Facade;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -56,6 +56,7 @@ public class StorageBean {
         try {
             trainerData = objectMapper.readValue(content, TrainerJsonDto[].class);
         } catch (IOException e) {
+            log.error("Cannot read TrainerDtos from json");
             throw new RuntimeException(e);
         }
         Arrays.stream(trainerData)

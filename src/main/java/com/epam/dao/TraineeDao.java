@@ -1,28 +1,29 @@
 package com.epam.dao;
 
+import com.epam.dto.trainee.TraineeWithTraining;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
-import jakarta.transaction.Transactional;
+import com.epam.service.GeneralService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.Query;
+import javax.persistence.criteria.*;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @Transactional
 @Slf4j
-public class TraineeDao {
-    @PersistenceContext
-    EntityManager entityManager;
+public class TraineeDao extends GeneralService {
+    @Autowired
+    private TrainerDao trainerDao;
 
     public Trainee save(Trainee trainee) {
         entityManager.persist(trainee);
@@ -40,12 +41,13 @@ public class TraineeDao {
     }
 
     public Optional<Trainee> findByUsername(String username) {
-        TypedQuery<Trainee> query = entityManager.createQuery("""
-                SELECT tr FROM Trainee tr
-                INNER JOIN User u ON u.id = tr.user.id AND u.username LIKE CONCAT('%', :username, '%')
-                """, Trainee.class).setParameter("username", username);
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Trainee> cq = cb.createQuery(Trainee.class);
+        Root<Trainee> traineeRoot = cq.from(Trainee.class);
+        cq.select(traineeRoot).where(cb.like(traineeRoot.get("user").get("username"), username));
 
-        return Optional.ofNullable(query.getSingleResult());
+        Trainee trainee = entityManager.createQuery(cq).getResultList().get(0);
+        return Optional.ofNullable(trainee);
     }
 
 
@@ -101,6 +103,39 @@ public class TraineeDao {
         }
 
     }
+
+    public List<Trainer> getNotAssignedTrainers(String username) {
+        Optional<Trainee> optionalTrainee = findByUsername(username);
+        if (optionalTrainee.isPresent()) {
+            Trainee trainee = optionalTrainee.get();
+            List<Trainer> assignedTrainers = trainee.getTrainers();
+            List<Trainer> allTrainers = trainerDao.findAll();
+            return allTrainers.stream()
+                    .filter(trainer -> !assignedTrainers.contains(trainer))
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    public List<Training> getTraineeTrainingsListByCriteria(TraineeWithTraining traineeWithTraining) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Training> cq = cb.createQuery(Training.class);
+        Root<Training> trainingRoot = cq.from(Training.class);
+        Join<Training, Trainer> trainersJoin = trainingRoot.join("trainer", JoinType.INNER);
+        Join<Training, Trainee> traineeJoin = trainingRoot.join("trainee", JoinType.INNER);
+
+
+        List<Predicate> predicates = new ArrayList<>();
+        addLikePredicate(traineeJoin.get("user").get("username"), traineeWithTraining.getUsername(), cb, predicates);
+        addLikePredicate(trainersJoin.get("user").get("username"), traineeWithTraining.getTrainerName(), cb, predicates);
+        addLikePredicate(trainingRoot.get("trainingName"), traineeWithTraining.getTrainingType(), cb, predicates);
+        addGreaterThanOrEqualsPredicate(trainingRoot.get("trainingDate"), traineeWithTraining.getPeriodFrom(), cb, predicates);
+        addLessThanOrEqualsPredicate(trainingRoot.get("trainingDate"), traineeWithTraining.getPeriodTo(), cb, predicates);
+        CriteriaQuery<Training> where = cq.select(trainingRoot).where(predicates.toArray(new Predicate[0]));
+
+        return entityManager.createQuery(where).getResultList();
+    }
+
 
 }
 

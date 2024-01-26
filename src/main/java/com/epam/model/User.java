@@ -1,8 +1,9 @@
 package com.epam.model;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.persistence.*;
 
 
 @Getter
@@ -16,10 +17,10 @@ public class User {
     private Integer id;
 
     @Column(name = "firstname", nullable = false)
-    private String firstName;
+    private String firstname;
 
     @Column(name = "lastname", nullable = false)
-    private String lastName;
+    private String lastname;
 
     @Column(name = "username", nullable = false)
     private String username;
