@@ -18,7 +18,9 @@
     "user": {
       "id": 101,
       "firstName": "John",
-      "lastName": "Smith"
+      "lastName": "Smith",
+      "username": "John.Smith",
+      "password": "randomPassword"
     }
   }
 ]

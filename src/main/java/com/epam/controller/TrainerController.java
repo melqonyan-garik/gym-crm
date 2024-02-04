@@ -2,16 +2,17 @@ package com.epam.controller;
 
 import com.epam.dto.trainer.*;
 import com.epam.mappers.TrainerMapper;
-import com.epam.model.*;
+import com.epam.model.Trainer;
+import com.epam.model.Training;
+import com.epam.model.TrainingType;
 import com.epam.service.TraineeService;
 import com.epam.service.TrainerService;
-import com.epam.utils.UserUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,28 +24,6 @@ public class TrainerController {
     private final TrainerService trainerService;
     private final TrainerMapper mapper;
     private final TraineeService traineeService;
-
-    @PostMapping
-    public ResponseEntity<TrainerRegistrationResponse> registerTrainer(@RequestBody @Valid TrainerRegistrationRequest request) {
-        String username = UserUtils.getBaseUsername(request.getFirstname(), request.getLastname());
-        Optional<Trainee> traineeOptional = traineeService.getTraineeByUsername(username);
-        if (traineeOptional.isPresent()) {
-            ResponseEntity.badRequest().body("Not possible to register as a trainer and trainee both");
-        }
-
-        Trainer trainer = new Trainer();
-        User user = new User();
-        user.setFirstname(request.getFirstname());
-        user.setLastname(request.getLastname());
-        trainer.setUser(user);
-        TrainingType trainingType = new TrainingType(request.getSpecialization(), List.of(trainer));
-        trainer.setSpecialization(trainingType);
-
-
-        Trainer createdTrainer = trainerService.createTrainer(trainer);
-        TrainerRegistrationResponse response = new TrainerRegistrationResponse(createdTrainer.getUser().getUsername(), createdTrainer.getUser().getPassword());
-        return ResponseEntity.ok(response);
-    }
 
     @GetMapping
     public ResponseEntity<TrainerProfileResponse> getTrainerProfile(@RequestParam String username) {

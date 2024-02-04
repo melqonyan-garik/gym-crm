@@ -27,4 +27,6 @@ public interface TraineeService {
     List<Trainer> getNotAssignedTrainers(String username);
 
     List<Training> getTraineeTrainingsList(TraineeWithTraining traineeWithTraining);
+    void deleteAll();
+
 }

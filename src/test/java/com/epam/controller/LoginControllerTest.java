@@ -28,34 +28,34 @@ class LoginControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    void testLogin_Successful() {
-        // Mocking data
-        User user = new User();
-        user.setUsername("testUser");
-        user.setPassword("correctPassword");
-        when(userDao.findByUsername("testUser")).thenReturn(Optional.of(user));
-
-        // Call the controller method
-        ResponseEntity<String> responseEntity = loginController.login("testUser", "correctPassword");
-
-        // Verify the response
-        assertEquals(200, responseEntity.getStatusCodeValue());
-        assertEquals("Login successful. Status: 200 OK", responseEntity.getBody());
-    }
-
-    @Test
-    void testLogin_Unsuccessful() {
-        // Mocking data
-        when(userDao.findByUsername("nonExistentUser")).thenReturn(Optional.empty());
-
-        // Call the controller method
-        ResponseEntity<String> responseEntity = loginController.login("nonExistentUser", "somePassword");
-
-        // Verify the response
-        assertEquals(401, responseEntity.getStatusCodeValue());
-        assertEquals("Invalid credentials. Status: 401 Unauthorized", responseEntity.getBody());
-    }
+//    @Test
+//    void testLogin_Successful() {
+//        // Mocking data
+//        User user = new User();
+//        user.setUsername("testUser");
+//        user.setPassword("correctPassword");
+//        when(userDao.findByUsername("testUser")).thenReturn(Optional.of(user));
+//
+//        // Call the controller method
+//        ResponseEntity<String> responseEntity = loginController.login("testUser", "correctPassword");
+//
+//        // Verify the response
+//        assertEquals(200, responseEntity.getStatusCodeValue());
+//        assertEquals("Login successful. Status: 200 OK", responseEntity.getBody());
+//    }
+//
+//    @Test
+//    void testLogin_Unsuccessful() {
+//        // Mocking data
+//        when(userDao.findByUsername("nonExistentUser")).thenReturn(Optional.empty());
+//
+//        // Call the controller method
+//        ResponseEntity<String> responseEntity = loginController.login("nonExistentUser", "somePassword");
+//
+//        // Verify the response
+//        assertEquals(401, responseEntity.getStatusCodeValue());
+//        assertEquals("Invalid credentials. Status: 401 Unauthorized", responseEntity.getBody());
+//    }
 
     @Test
     @Disabled

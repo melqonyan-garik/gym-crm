@@ -5,13 +5,14 @@ import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
 import com.epam.service.GeneralService;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.Query;
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,15 +42,15 @@ public class TraineeDao extends GeneralService {
     }
 
     public Optional<Trainee> findByUsername(String username) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Trainee> cq = cb.createQuery(Trainee.class);
-        Root<Trainee> traineeRoot = cq.from(Trainee.class);
-        cq.select(traineeRoot).where(cb.like(traineeRoot.get("user").get("username"), username));
-
-        Trainee trainee = entityManager.createQuery(cq).getResultList().get(0);
-        return Optional.ofNullable(trainee);
+        TypedQuery<Trainee> query = entityManager.createQuery("SELECT tr FROM Trainee tr" +
+                                                              " INNER JOIN User u ON u.id = tr.user.id" +
+                                                              " AND u.username LIKE :username", Trainee.class)
+                .setParameter("username", username);
+        if (query.getResultList().isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(query.getSingleResult());
     }
-
 
     public List<Trainee> findAll() {
         Query query = entityManager.createQuery("SELECT t FROM Trainee t");
@@ -137,5 +138,8 @@ public class TraineeDao extends GeneralService {
     }
 
 
+    public void deleteAll() {
+        entityManager.createQuery("delete from trainee");
+    }
 }
 

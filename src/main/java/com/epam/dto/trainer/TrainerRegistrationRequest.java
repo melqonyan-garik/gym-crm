@@ -1,9 +1,8 @@
 package com.epam.dto.trainer;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter

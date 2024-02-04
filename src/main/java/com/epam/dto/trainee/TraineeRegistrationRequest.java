@@ -1,13 +1,15 @@
 package com.epam.dto.trainee;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TraineeRegistrationRequest {
     @NotNull
     private String firstname;

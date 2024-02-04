@@ -10,4 +10,5 @@ import lombok.Setter;
 public class TrainerRegistrationResponse {
     private String username;
     private String password;
+    private String token;
 }
