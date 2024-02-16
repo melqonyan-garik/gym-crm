@@ -2,6 +2,7 @@ package com.epam.config;
 
 import com.epam.service.JwtService;
 import com.epam.service.LoginAttemptService;
+import com.epam.service.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final LoginAttemptService loginAttemptService;
+    private final TokenRepository tokenRepository;
 
     @Override
     protected void doFilterInternal(
@@ -48,7 +50,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 throw new LockedException("User account is locked");
             }
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+            Boolean isTokenValid = tokenRepository.findByToken(jwt)
+                    .map(t -> !t.getExpired() && !t.getRevoked())
+                    .orElse(false);
+            if (jwtService.validateToken(jwt) && isTokenValid) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

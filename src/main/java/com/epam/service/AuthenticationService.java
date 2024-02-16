@@ -5,10 +5,7 @@ import com.epam.dto.trainee.TraineeRegistrationResponse;
 import com.epam.dto.trainer.TrainerRegistrationRequest;
 import com.epam.dto.trainer.TrainerRegistrationResponse;
 import com.epam.mappers.TraineeMapper;
-import com.epam.model.Trainee;
-import com.epam.model.Trainer;
-import com.epam.model.TrainingType;
-import com.epam.model.User;
+import com.epam.model.*;
 import com.epam.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +28,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final LoginAttemptService loginAttemptService;
+    private final TokenRepository tokenRepository;
 
     public TraineeRegistrationResponse registerTraineeUser(TraineeRegistrationRequest request) {
         Trainee trainee = mapper.traineeRegistrationRequestToTrainee(request);
@@ -41,6 +39,12 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(password));
         traineeService.createTrainee(trainee);
         String jwtToken = jwtService.generateToken(user);
+        Token token = new Token();
+        token.setToken(jwtToken);
+        token.setRevoked(false);
+        token.setExpired(false);
+        token.setUser(user);
+        tokenRepository.save(token);
         return new TraineeRegistrationResponse(username, password, jwtToken);
     }
 
@@ -58,6 +62,12 @@ public class AuthenticationService {
         trainer.setSpecialization(trainingType);
         trainerService.createTrainer(trainer);
         String jwtToken = jwtService.generateToken(user);
+        Token token = new Token();
+        token.setToken(jwtToken);
+        token.setRevoked(false);
+        token.setExpired(false);
+        token.setUser(user);
+        tokenRepository.save(token);
         return new TrainerRegistrationResponse(username, password, jwtToken);
     }
 
