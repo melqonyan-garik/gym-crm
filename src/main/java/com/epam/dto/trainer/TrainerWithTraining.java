@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Data
 public class TrainerWithTraining {
-    @NotNull
+    @NotNull(message = "username cannot be null.")
     private String username;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate periodFrom;

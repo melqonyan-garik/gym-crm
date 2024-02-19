@@ -4,6 +4,7 @@ import com.epam.dto.trainee.TraineeRegistrationRequest;
 import com.epam.dto.trainee.TraineeRegistrationResponse;
 import com.epam.dto.trainer.TrainerRegistrationRequest;
 import com.epam.dto.trainer.TrainerRegistrationResponse;
+import com.epam.exceptions.UserConflictException;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.service.AuthenticationService;
@@ -29,22 +30,22 @@ public class AuthenticationController {
     private final TraineeService traineeService;
     private final LoginAttemptService loginAttemptService;
 
-    @PostMapping("/register-trainee")
+    @PostMapping("/trainee/register")
     public ResponseEntity<TraineeRegistrationResponse> registerTrainee(@RequestBody @Valid TraineeRegistrationRequest request) {
         String username = UserUtils.getBaseUsername(request.getFirstname(), request.getLastname());
         Optional<Trainer> trainerOptional = trainerService.getTrainerByUsername(username);
         if (trainerOptional.isPresent()) {
-            throw new IllegalArgumentException("Not possible to register as a trainer and trainee both");
+            throw new UserConflictException("Not possible to register as a trainer and trainee both");
         }
         return ResponseEntity.ok(authenticationService.registerTraineeUser(request));
     }
 
-    @PostMapping("/register-trainer")
+    @PostMapping("/trainer/register")
     public ResponseEntity<TrainerRegistrationResponse> registerTrainer(@RequestBody @Valid TrainerRegistrationRequest request) {
         String username = UserUtils.getBaseUsername(request.getFirstname(), request.getLastname());
         Optional<Trainee> traineeOptional = traineeService.getTraineeByUsername(username);
         if (traineeOptional.isPresent()) {
-            throw new IllegalArgumentException("Not possible to register as a trainer and trainee both");
+            throw new UserConflictException("Not possible to register as a trainer and trainee both");
         }
 
         return ResponseEntity.ok(authenticationService.registerTrainerUser(request));

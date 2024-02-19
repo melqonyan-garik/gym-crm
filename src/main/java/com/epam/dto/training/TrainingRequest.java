@@ -8,14 +8,14 @@ import lombok.Setter;
 @Setter
 public class TrainingRequest {
 
-    @NotNull
+    @NotNull(message = "traineeUsername cannot be null.")
     private String traineeUsername;
-    @NotNull
+    @NotNull(message = "trainerUsername cannot be null.")
     private String trainerUsername;
-    @NotNull
+    @NotNull(message = "trainingName cannot be null.")
     private String trainingName;
-    @NotNull
+    @NotNull(message = "trainingDate cannot be null.")
     private String trainingDate;
-    @NotNull
+    @NotNull(message = "trainingDuration cannot be null.")
     private String trainingDuration;
 }

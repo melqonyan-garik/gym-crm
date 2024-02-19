@@ -67,14 +67,14 @@ public class TraineeController {
         }
     }
 
-    @GetMapping("get-not-assigned-trainers")
+    @GetMapping("trainers/unassigned")
     ResponseEntity<List<TrainerProfile>> getNotAssignedTrainers(@RequestParam(value = "username") String username) {
         List<Trainer> notAssignedTrainers = traineeService.getNotAssignedTrainers(username);
         List<TrainerProfile> trainerProfiles = mapper.TrainersToTrainerProfiles(notAssignedTrainers);
         return ResponseEntity.ok(trainerProfiles);
     }
 
-    @PutMapping("update-by-trainers")
+    @PutMapping("/trainers/assignment")
     public ResponseEntity<List<TrainerProfile>> updateTraineesTrainerList(@RequestBody @Valid TraineeWithTrainersList traineeWithTrainers) {
         Optional<Trainee> traineeOptional = traineeService.getTraineeByUsername(traineeWithTrainers.getTraineeUsername());
         if (traineeOptional.isEmpty()) {

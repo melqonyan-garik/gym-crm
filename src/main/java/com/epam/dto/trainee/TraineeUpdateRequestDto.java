@@ -10,11 +10,11 @@ import java.time.LocalDate;
 @Setter
 public class TraineeUpdateRequestDto {
 
-    @NotNull
+    @NotNull(message = "firstname cannot be null.")
     private String firstname;
-    @NotNull
+    @NotNull(message = "lastname cannot be null.")
     private String lastname;
-    private LocalDate dateOfBirth;
+    private String dateOfBirth;
     private String address;
     private boolean active;
 

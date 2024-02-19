@@ -95,6 +95,11 @@
             <artifactId>spring-security-rsa</artifactId>
             <version>1.0.11.RELEASE</version>
         </dependency>
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <scope>runtime</scope>
+            </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -165,5 +170,33 @@
                 </dependency>
             </dependencies>
         </profile>
+            <profile>
+                <id>stg</id>
+
+                <build>
+                    <resources>
+                        <resource>
+                            <!-- Set application properties to be filtered -->
+                            <directory>src/main/resources</directory>
+                            <filtering>true</filtering>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.jks</exclude>
+                            </excludes>
+                        </resource>
+                        <resource>
+                            <!-- Set application properties that are not to be filtered -->
+                            <directory>src/main/resources</directory>
+                            <filtering>false</filtering>
+                            <includes>
+                                <include>**/*.jks</include> <!-- This includes .jks files in the resources directory. -->
+                            </includes>
+                        </resource>
+                    </resources>
+                </build>
+            </profile>
+
     </profiles>
 </project>

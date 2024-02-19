@@ -5,17 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class TraineeRegistrationRequest {
-    @NotNull
+    @NotNull(message = "firstname cannot be null.")
     private String firstname;
-    @NotNull
+    @NotNull(message = "lastname cannot be null.")
     private String lastname;
-    private LocalDate dateOfBirth;
+    private String dateOfBirth;
     private String address;
 
 }

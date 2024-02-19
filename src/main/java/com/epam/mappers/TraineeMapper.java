@@ -10,13 +10,17 @@ import com.epam.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Mapper(config = MapStructGlobalConfig.class)
 public interface TraineeMapper {
     @Mapping(target = "user.firstname", source = "firstname")
     @Mapping(target = "user.lastname", source = "lastname")
+    @Mapping(target = "dateOfBirth", source = "dateOfBirth", qualifiedByName = "stringToDate")
     Trainee traineeRegistrationRequestToTrainee(TraineeRegistrationRequest traineeRegister);
 
     @Mapping(target = "firstname", source = "user.firstname")
@@ -35,6 +39,7 @@ public interface TraineeMapper {
     @Mapping(target = "user.firstname", source = "firstname")
     @Mapping(target = "user.lastname", source = "lastname")
     @Mapping(target = "user.active", source = "active")
+    @Mapping(target = "dateOfBirth", source = "dateOfBirth", qualifiedByName = "stringToDate")
     void updateEntity(@MappingTarget Trainee trainee, TraineeUpdateRequestDto updateDto);
 
     @Mapping(target = "firstname", source = "user.firstname")
@@ -50,4 +55,9 @@ public interface TraineeMapper {
     List<TraineeTrainingResponse> trainingsToTraineeTrainingResponse(List<Training> trainings);
 
     TraineeRegistrationResponse traineeToTraineeRegistrationResponse(User user);
+    @Named("stringToDate")
+    default LocalDate stringToDate(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        return date != null ? LocalDate.parse(date, formatter) : null;
+    }
 }

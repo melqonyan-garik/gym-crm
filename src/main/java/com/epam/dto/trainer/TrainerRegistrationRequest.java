@@ -7,10 +7,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TrainerRegistrationRequest {
-    @NotNull
+    @NotNull(message = "firstname cannot be null.")
     private String firstname;
-    @NotNull
+    @NotNull(message = "lastname cannot be null.")
     private String lastname;
-    @NotNull
+    @NotNull(message = "specialization cannot be null.")
     private String specialization;
 }

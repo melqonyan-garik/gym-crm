@@ -10,8 +10,8 @@ import java.util.List;
 @Getter
 @Setter
 public class TraineeWithTrainersList {
-    @NotNull
+    @NotNull(message = "traineeUsername cannot be null.")
     private String traineeUsername;
-    @NotEmpty
+    @NotEmpty(message = "trainersList cannot be empty")
     private List<String> trainersList;
 }

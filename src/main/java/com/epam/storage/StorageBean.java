@@ -46,8 +46,8 @@ public class StorageBean {
 //        initializeTrainer();
 //        log.info("Trainer Storage initialization completed successfully.");
 //
-//        trainingTypeInitializer.initializeTrainingTypes();
-//        log.info("Training type initialization completed successfully.");
+        trainingTypeInitializer.initializeTrainingTypes();
+        log.info("Training type initialization completed successfully.");
     }
 
     private void initializeTrainer() {

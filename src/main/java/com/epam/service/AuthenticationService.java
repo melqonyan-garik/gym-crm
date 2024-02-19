@@ -4,6 +4,7 @@ import com.epam.dto.trainee.TraineeRegistrationRequest;
 import com.epam.dto.trainee.TraineeRegistrationResponse;
 import com.epam.dto.trainer.TrainerRegistrationRequest;
 import com.epam.dto.trainer.TrainerRegistrationResponse;
+import com.epam.exceptions.InvalidSpecializationException;
 import com.epam.mappers.TraineeMapper;
 import com.epam.model.*;
 import com.epam.utils.UserUtils;
@@ -15,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final LoginAttemptService loginAttemptService;
     private final TokenRepository tokenRepository;
+    private final TrainingTypeRepository trainingTypeRepository;
 
     public TraineeRegistrationResponse registerTraineeUser(TraineeRegistrationRequest request) {
         Trainee trainee = mapper.traineeRegistrationRequestToTrainee(request);
@@ -58,6 +62,7 @@ public class AuthenticationService {
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         trainer.setUser(user);
+        validateSpecialization(request.getSpecialization());
         TrainingType trainingType = new TrainingType(request.getSpecialization(), List.of(trainer));
         trainer.setSpecialization(trainingType);
         trainerService.createTrainer(trainer);
@@ -71,6 +76,21 @@ public class AuthenticationService {
         return new TrainerRegistrationResponse(username, password, jwtToken);
     }
 
+    private void validateSpecialization(String specialization) {
+        Optional<TrainingType> optionalTrainingType = trainingTypeRepository.findByTrainingTypeName(specialization);
+        if (optionalTrainingType.isEmpty()) {
+            List<String> validSpecializations = trainingTypeRepository.findAll()
+                    .stream()
+                    .map(TrainingType::getTrainingTypeName)
+                    .collect(Collectors.toList());
+
+            String errorMessage = String.format("Invalid specialization. Valid specializations are: %s",
+                    String.join(", ", validSpecializations));
+
+            throw new InvalidSpecializationException(errorMessage);
+        }
+    }
+
     public String authenticate(String username, String password) {
         if (loginAttemptService.isBlocked(username)) {
             throw new LockedException("User account is locked");
@@ -79,7 +99,14 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(username, password));
         User user = userRepository.findByUsername(username)
                 .orElseThrow();
-        return jwtService.generateToken(user);
+        String jwtToken = jwtService.generateToken(user);
+        Token token = new Token();
+        token.setToken(jwtToken);
+        token.setRevoked(false);
+        token.setExpired(false);
+        token.setUser(user);
+        tokenRepository.save(token);
+        return jwtToken;
     }
 
 }
