@@ -6,17 +6,15 @@ import com.epam.mappers.TraineeMapper;
 import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
-import com.epam.model.User;
 import com.epam.service.TraineeService;
 import com.epam.service.TrainerService;
-import com.epam.utils.UserUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -30,21 +28,6 @@ public class TraineeController {
     private final TraineeMapper mapper;
     private final TraineeService traineeService;
     private final TrainerService trainerService;
-
-    @PostMapping
-    public ResponseEntity<TraineeRegistrationResponse> registerTrainee(@RequestBody @Valid TraineeRegistrationRequest request) {
-        String username = UserUtils.getBaseUsername(request.getFirstname(), request.getLastname());
-        Optional<Trainer> trainerOptional = trainerService.getTrainerByUsername(username);
-        if (trainerOptional.isPresent()) {
-            ResponseEntity.badRequest().body("Not possible to register as a trainer and trainee both");
-        }
-
-        Trainee trainee = mapper.traineeRegistrationRequestToTrainee(request);
-        Trainee createdTrainee = traineeService.createTrainee(trainee);
-        User user = createdTrainee.getUser();
-        TraineeRegistrationResponse response = mapper.traineeToTraineeRegistrationResponse(user);
-        return ResponseEntity.ok(response);
-    }
 
     @GetMapping
     public ResponseEntity<TraineeProfileResponse> getTraineeProfile(@RequestParam String username) {
@@ -84,14 +67,14 @@ public class TraineeController {
         }
     }
 
-    @GetMapping("get-not-assigned-trainers")
+    @GetMapping("trainers/unassigned")
     ResponseEntity<List<TrainerProfile>> getNotAssignedTrainers(@RequestParam(value = "username") String username) {
         List<Trainer> notAssignedTrainers = traineeService.getNotAssignedTrainers(username);
         List<TrainerProfile> trainerProfiles = mapper.TrainersToTrainerProfiles(notAssignedTrainers);
         return ResponseEntity.ok(trainerProfiles);
     }
 
-    @PutMapping("update-by-trainers")
+    @PutMapping("/trainers/assignment")
     public ResponseEntity<List<TrainerProfile>> updateTraineesTrainerList(@RequestBody @Valid TraineeWithTrainersList traineeWithTrainers) {
         Optional<Trainee> traineeOptional = traineeService.getTraineeByUsername(traineeWithTrainers.getTraineeUsername());
         if (traineeOptional.isEmpty()) {

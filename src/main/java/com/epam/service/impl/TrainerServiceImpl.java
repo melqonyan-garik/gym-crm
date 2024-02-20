@@ -28,16 +28,8 @@ public class TrainerServiceImpl implements TrainerService {
 
     public Trainer createTrainer(Trainer trainer) {
         try {
-            String username = userUtils.generateUsername(trainer.getUser().getFirstname(), trainer.getUser().getLastname());
-            String password = UserUtils.generateRandomPassword();
-            if (trainer.getUser() != null) {
-                trainer.getUser().setUsername(username);
-                trainer.getUser().setPassword(password);
-
-            }
             Trainer createdTrainer = trainerDao.save(trainer);
-
-            log.info("Trainer created successfully. Username: {}, ID: {}", username, createdTrainer.getId());
+            log.info("Trainer created successfully. Username: {}, ID: {}", trainer.getUser().getUsername(), createdTrainer.getId());
             return createdTrainer;
         } catch (Exception e) {
             log.error("Error creating trainer. Details: {}", e.getMessage(), e);

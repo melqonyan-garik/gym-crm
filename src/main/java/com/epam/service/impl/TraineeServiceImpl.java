@@ -10,13 +10,13 @@ import com.epam.model.Training;
 import com.epam.model.User;
 import com.epam.service.TraineeService;
 import com.epam.utils.UserUtils;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,16 +32,8 @@ public class TraineeServiceImpl implements TraineeService {
 
     public Trainee createTrainee(Trainee trainee) {
         try {
-            String username = userUtils.generateUsername(trainee.getUser().getFirstname(), trainee.getUser().getLastname());
-            String password = UserUtils.generateRandomPassword();
-            if (trainee.getUser() != null) {
-                trainee.getUser().setUsername(username);
-                trainee.getUser().setPassword(password);
-
-            }
             Trainee createdTrainee = traineeDao.save(trainee);
-
-            log.info("Trainee created successfully. Username: {}, ID: {}", username, createdTrainee.getId());
+            log.info("Trainee created successfully. Username: {}, ID: {}", trainee.getUser().getUsername(), createdTrainee.getId());
             return createdTrainee;
         } catch (Exception e) {
             log.error("Error creating trainee. Details: {}", e.getMessage(), e);
@@ -227,6 +219,11 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public List<Training> getTraineeTrainingsList(TraineeWithTraining traineeWithTraining) {
         return traineeDao.getTraineeTrainingsListByCriteria(traineeWithTraining);
+    }
+
+    @Override
+    public void deleteAll() {
+        traineeDao.deleteAll();
     }
 
 }

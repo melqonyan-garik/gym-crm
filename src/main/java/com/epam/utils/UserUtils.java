@@ -49,7 +49,7 @@ public class UserUtils {
     }
     public static boolean isValidPassword(String password) {
         // Add your password criteria checks here
-        return password.length() >= 6 && password.matches(".*[A-Z].*") && password.matches(".*[a-z].*");
+        return password.length() >= 6;
     }
 
 }

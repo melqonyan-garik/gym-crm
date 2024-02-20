@@ -1,6 +1,6 @@
 package com.epam.controller;
 
-import com.epam.dto.trainee.*;
+import com.epam.dto.trainee.TraineeProfileResponse;
 import com.epam.dto.trainer.TrainerProfile;
 import com.epam.mappers.TraineeMapper;
 import com.epam.model.Trainee;
@@ -38,32 +38,32 @@ class TraineeControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    @Disabled
-    void testRegisterTrainee_Successful() {
-        // Mocking data
-        TraineeRegistrationRequest request = new TraineeRegistrationRequest();
-
-        Trainee trainee = new Trainee();
-        User user = new User();
-        user.setUsername("traineeUser");
-        user.setPassword("password123");
-        trainee.setUser(user);
-
-
-        when(mapper.traineeRegistrationRequestToTrainee(request)).thenReturn(trainee);
-        when(traineeService.createTrainee(trainee)).thenReturn(trainee);
-
-        // Call the controller method
-        ResponseEntity<TraineeRegistrationResponse> responseEntity = traineeController.registerTrainee(request);
-
-        // Verify the response
-        assertEquals(200, responseEntity.getStatusCodeValue());
-
-        TraineeRegistrationResponse response = responseEntity.getBody();
-        assertEquals("traineeUser", response.getUsername());
-        assertEquals("password123", response.getPassword());
-    }
+//    @Test
+//    @Disabled
+//    void testRegisterTrainee_Successful() {
+//        // Mocking data
+//        TraineeRegistrationRequest request = new TraineeRegistrationRequest();
+//
+//        Trainee trainee = new Trainee();
+//        User user = new User();
+//        user.setUsername("traineeUser");
+//        user.setPassword("password123");
+//        trainee.setUser(user);
+//
+//
+//        when(mapper.traineeRegistrationRequestToTrainee(request)).thenReturn(trainee);
+//        when(traineeService.createTrainee(trainee)).thenReturn(trainee);
+//
+//        // Call the controller method
+//        ResponseEntity<TraineeRegistrationResponse> responseEntity = traineeController.registerTrainee(request);
+//
+//        // Verify the response
+//        assertEquals(200, responseEntity.getStatusCodeValue());
+//
+//        TraineeRegistrationResponse response = responseEntity.getBody();
+//        assertEquals("traineeUser", response.getUsername());
+//        assertEquals("password123", response.getPassword());
+//    }
 
     @Test
     void testGetTraineeProfile_Successful() {

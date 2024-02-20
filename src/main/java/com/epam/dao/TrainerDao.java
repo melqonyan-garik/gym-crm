@@ -5,13 +5,13 @@ import com.epam.model.Trainee;
 import com.epam.model.Trainer;
 import com.epam.model.Training;
 import com.epam.service.GeneralService;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +42,10 @@ public class TrainerDao extends GeneralService {
                                                               " INNER JOIN User u ON u.id = tr.user.id" +
                                                               " AND u.username LIKE :username", Trainer.class)
                 .setParameter("username", username);
-        return Optional.ofNullable(query.getSingleResult());
+        if (query.getResultList().isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(query.getSingleResult());
     }
 
     public List<Trainer> findAll() {

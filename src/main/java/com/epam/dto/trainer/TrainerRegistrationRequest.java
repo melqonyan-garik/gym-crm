@@ -1,17 +1,16 @@
 package com.epam.dto.trainer;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
 public class TrainerRegistrationRequest {
-    @NotNull
+    @NotNull(message = "firstname cannot be null.")
     private String firstname;
-    @NotNull
+    @NotNull(message = "lastname cannot be null.")
     private String lastname;
-    @NotNull
+    @NotNull(message = "specialization cannot be null.")
     private String specialization;
 }

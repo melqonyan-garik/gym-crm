@@ -1,19 +1,19 @@
 package com.epam.dto.trainee;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TraineeRegistrationRequest {
-    @NotNull
+    @NotNull(message = "firstname cannot be null.")
     private String firstname;
-    @NotNull
+    @NotNull(message = "lastname cannot be null.")
     private String lastname;
-    private LocalDate dateOfBirth;
+    private String dateOfBirth;
     private String address;
 
 }

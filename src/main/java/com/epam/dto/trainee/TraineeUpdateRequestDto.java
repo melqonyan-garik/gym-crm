@@ -1,20 +1,20 @@
 package com.epam.dto.trainee;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 public class TraineeUpdateRequestDto {
 
-    @NotNull
+    @NotNull(message = "firstname cannot be null.")
     private String firstname;
-    @NotNull
+    @NotNull(message = "lastname cannot be null.")
     private String lastname;
-    private LocalDate dateOfBirth;
+    private String dateOfBirth;
     private String address;
     private boolean active;
 
